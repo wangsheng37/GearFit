@@ -1,0 +1,2050 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<title>渐开线齿轮正确啮合条件｜两齿轮试验台</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='11' cy='16' r='8' fill='none' stroke='%232f5fae' stroke-width='3' stroke-dasharray='3 2'/%3E%3Ccircle cx='23' cy='16' r='6' fill='none' stroke='%23a86b0c' stroke-width='3' stroke-dasharray='3 2'/%3E%3C/svg%3E">
+<style>
+:root {
+  color-scheme: light;
+  --paper: #ffffff;
+  --panel: #f4f6f8;
+  --ink: #1e2933;
+  --muted: #5b6875;
+  --line: #d9dee3;
+  --warn: #9a3b12;
+  --warn-bg: #fff3e8;
+  --note-bg: #eef4fb;
+  --g1: #2f5fae; --g1-fill: #e2eaf6;
+  --g2: #a86b0c; --g2-fill: #f6ead5;
+  --hit: #d64541;
+  --radius: 8px;
+  font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", "Source Han Sans SC", system-ui, sans-serif;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--paper); color: var(--ink); }
+html { overflow-anchor: none; }
+body { font-size: 16px; line-height: 1.55; -webkit-text-size-adjust: 100%; }
+:root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+button, input, textarea, select { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid #1f5fa8; outline-offset: 2px; }
+[hidden] { display: none !important; }
+
+.app { max-width: 1440px; margin: 0 auto; padding: 14px 20px 10px; }
+
+.top { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 22px; padding-bottom: 10px; border-bottom: 1px solid var(--line); }
+.top h1 { font-size: 23px; line-height: 1.3; margin: 0; letter-spacing: .02em; }
+.top .question { margin: 0; font-size: 16px; color: var(--ink); }
+.top .question span { color: var(--muted); }
+
+.layout { display: grid; grid-template-columns: minmax(0, 1fr) 356px; gap: 20px; padding-top: 14px; align-items: start; }
+.leftcol { min-width: 0; }
+.stage-wrap { min-width: 0; background: var(--paper); }
+.stage { position: relative; height: 540px; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; background: #fff; contain: layout paint; }
+#view { display: block; width: 100%; height: 100%; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+.boot-msg { position: absolute; left: 12px; right: 12px; top: 50%; transform: translateY(-50%); margin: 0; text-align: center; font-size: 14px; color: var(--muted); }
+.boot-msg.err { color: var(--warn); }
+
+.runbar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+.btn { min-height: 40px; padding: 6px 14px; border: 1px solid var(--ink); border-radius: 7px; background: #fff; cursor: pointer; touch-action: manipulation; }
+.btn.primary { background: var(--ink); color: #fff; min-width: 92px; font-weight: 600; }
+.btn.icon { min-width: 42px; padding: 6px 8px; }
+.btn.small { min-height: 34px; padding: 4px 10px; font-size: 14px; }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+.speed { white-space: nowrap; display: inline-flex; align-items: center; gap: 6px; font-size: 14px; color: var(--muted); }
+.speed input { width: 110px; }
+.feedback { margin: 8px 0 0; font-size: 15px; min-height: 1.55em; }
+.feedback:empty { display: none; }
+.feedback.warn { background: var(--warn-bg); color: var(--warn); padding: 6px 10px; border-radius: 6px; }
+.feedback.info { background: var(--note-bg); padding: 6px 10px; border-radius: 6px; }
+.feedback.calm { color: #2d6a47; }
+
+.viewbar { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; align-items: center; }
+.viewbar .lab { font-size: 13px; color: var(--muted); margin-right: 2px; }
+.tog { display: inline-flex; align-items: center; gap: 6px; min-height: 34px; padding: 4px 10px; border: 1px solid var(--line); border-radius: 17px; background: #fff; cursor: pointer; font-size: 14px; touch-action: manipulation; }
+.tog i { display: inline-block; width: 14px; height: 0; border-top: 2px solid var(--c, #888); }
+.tog i.dash { border-top-style: dashed; }
+.tog i.dot { border-top-style: dotted; }
+.tog i.pt { width: 9px; height: 9px; border: 0; border-radius: 50%; background: var(--hit); }
+.tog[aria-pressed="true"] { border-color: var(--ink); background: var(--ink); color: #fff; }
+.tog[aria-pressed="true"] i { border-top-color: #fff; }
+.tog[aria-pressed="true"] i.pt { background: #fff; }
+
+/* 控制区 */
+.panel { background: var(--panel); border-radius: var(--radius); padding: 4px 16px 14px; }
+.group { padding: 12px 0; border-bottom: 1px solid var(--line); }
+.group:last-child { border-bottom: 0; }
+.group h2 { font-size: 15px; margin: 0 0 8px; font-weight: 600; }
+.group h2 .unit { font-weight: 400; color: var(--muted); font-size: 13px; }
+
+.seg { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; border: 1px solid var(--ink); border-radius: 7px; overflow: hidden; }
+.seg button { border: 0; border-right: 1px solid var(--ink); background: #fff; min-height: 42px; padding: 4px 6px; cursor: pointer; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 7px; touch-action: manipulation; }
+.seg button:last-child { border-right: 0; }
+.seg button i { width: 11px; height: 11px; border-radius: 50%; display: inline-block; background: var(--c); }
+.seg button small { font-weight: 400; font-size: 12px; opacity: .85; }
+.seg button[aria-checked="true"] { background: var(--ink); color: #fff; }
+.seg button[aria-checked="true"] i { outline: 2px solid #fff; }
+
+.bin { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin: 10px 0 4px; }
+.part.custom { border-style: dashed; }
+.part.custom.on { border-style: solid; }
+.chk { display: flex; align-items: flex-start; gap: 8px; font-size: 14px; margin: 0 0 8px; cursor: pointer; }
+.chk input { width: 18px; height: 18px; margin: 2px 0 0; flex: none; accent-color: var(--ink); }
+.part { border: 1px solid var(--line); background: #fff; border-radius: 7px; padding: 4px 2px 3px; cursor: pointer; text-align: center; line-height: 1.25; min-height: 46px; touch-action: manipulation; }
+.part b { display: block; font-size: 16px; }
+.part small { display: block; font-size: 11px; color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.part.on { border-color: var(--slot, var(--ink)); box-shadow: inset 0 0 0 1px var(--slot, var(--ink)); }
+.bin-label { font-size: 13px; color: var(--muted); margin-top: 10px; }
+
+.prm { display: grid; grid-template-columns: 108px minmax(0, 1fr) 76px; gap: 8px; align-items: center; margin: 2px 0 4px; }
+.prm label { font-size: 15px; white-space: nowrap; }
+.prm label em { font-style: italic; font-family: "Times New Roman", Georgia, serif; font-size: 17px; }
+.prm label small { font-size: 12px; color: var(--muted); margin-left: 1px; }
+.prm input[type=number] { width: 76px; padding: 4px 6px; border: 1px solid var(--line); border-radius: 6px; background: #fff; text-align: right; font-variant-numeric: tabular-nums; }
+.gear-note { font-size: 13px; color: var(--muted); margin: 6px 0 0; min-height: 0; }
+.gear-note:empty { display: none; }
+
+input[type=range] { --c: var(--ink); -webkit-appearance: none; appearance: none; width: 100%; height: 30px; margin: 0; background: transparent; cursor: pointer; touch-action: pan-y; }
+input[type=range]::-webkit-slider-runnable-track { height: 6px; border-radius: 3px; background: #d3d9df; }
+input[type=range]::-moz-range-track { height: 6px; border-radius: 3px; background: #d3d9df; }
+input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 22px; height: 22px; margin-top: -8px; border-radius: 50%; background: var(--c); border: 3px solid #fff; box-shadow: 0 0 0 1px #8a949e; }
+input[type=range]::-moz-range-thumb { width: 16px; height: 16px; border-radius: 50%; background: var(--c); border: 3px solid #fff; box-shadow: 0 0 0 1px #8a949e; }
+
+.row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 6px; }
+.tip { margin: 6px 0 0; font-size: 13px; color: var(--muted); }
+
+.trials { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 8px; font-variant-numeric: tabular-nums; }
+.trials th { text-align: left; font-weight: 600; color: var(--muted); padding: 3px 4px; border-bottom: 1px solid var(--line); }
+.trials td { padding: 4px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.trials td:first-child { color: var(--muted); }
+
+.why { margin-top: 8px; font-size: 14px; }
+.why table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; margin: 6px 0; }
+.why td { padding: 3px 4px; border-bottom: 1px solid var(--line); }
+.why td:last-child { text-align: right; min-width: 7.5em; }
+.why td:first-child { color: var(--muted); font-size: 13px; }
+.why p { margin: 6px 0; }
+.why .rule { background: #fff; border-radius: 6px; padding: 8px 10px; margin-top: 8px; }
+.why .rule ol, .why .rule ul { margin: 4px 0; padding-left: 20px; }
+.why .rule li { margin: 3px 0; }
+.plain-link { border: 0; padding: 0 2px; background: none; color: #365b85; text-decoration: underline; cursor: pointer; font-size: inherit; }
+
+/* 作业区 */
+.reflection { margin: 18px 0 12px; padding: 16px 18px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; }
+.reflection h2 { font-size: 18px; margin: 0 0 8px; }
+.reflection .ask { margin: 0 0 8px; font-size: 15px; }
+.reflection textarea { display: block; width: 100%; min-height: 100px; padding: 10px 12px; border: 1px solid #b8c1cb; border-radius: 7px; background: #fff; resize: vertical; line-height: 1.6; }
+.namefield { display: block; font-size: 15px; font-weight: 600; margin-top: 12px; max-width: 320px; }
+.namefield input { display: block; width: 100%; height: 42px; border: 1px solid #b8c1cb; border-radius: 7px; padding: 7px 11px; background: white; margin-top: 5px; font-weight: 400; }
+.submit-line { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 12px; }
+.submit-status { font-size: 13px; color: #34664b; margin: 8px 0 0; min-height: 1.4em; }
+.submit-status.error { color: #a33a17; }
+.wps-open { display: inline-flex; align-items: center; text-decoration: none; color: inherit; }
+.json-backup { margin-top: 10px; }
+.json-backup summary { font-size: 13px; color: #526372; cursor: pointer; }
+.json-backup textarea { width: 100%; min-height: 110px; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12px; margin-top: 5px; }
+
+.teacher { margin: 10px 0; padding: 14px 16px; border: 1px dashed #9aa6b2; border-radius: 8px; font-size: 14px; }
+.teacher h2 { font-size: 16px; margin: 0 0 6px; }
+.teacher h3 { font-size: 15px; margin: 12px 0 4px; }
+.teacher table { border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.teacher td, .teacher th { padding: 3px 8px; border-bottom: 1px solid var(--line); text-align: left; }
+.teacher pre { white-space: pre-wrap; background: var(--panel); padding: 8px; border-radius: 6px; font-size: 12px; max-height: 260px; overflow: auto; }
+
+
+@media (min-width: 981px) { .leftcol { position: -webkit-sticky; position: sticky; top: 10px; } }
+@media (max-width: 980px) {
+  .layout { display: block; }
+  .leftcol { display: contents; }
+  .stage-wrap { position: -webkit-sticky; position: sticky; top: 0; z-index: 5; padding-bottom: 4px; border-bottom: 1px solid var(--line); }
+  .stage { height: 330px; height: min(44vh, 360px); min-height: 220px; }
+  .runbar { margin-top: 6px; gap: 6px; }
+  .feedback { margin-top: 4px; font-size: 14px; }
+  .panel { margin-top: 10px; }
+  html { scroll-padding-top: calc(min(44vh, 360px) + 120px); }
+}
+@media (max-width: 560px) {
+  .app { padding: 8px 10px 14px; }
+  .top h1 { font-size: 19px; }
+  .top .question { font-size: 14px; }
+  .stage { height: 290px; height: min(42vh, 320px); min-height: 210px; }
+  .speed input { width: 80px; }
+  .btn { padding: 6px 10px; }
+  .btn.primary { min-width: 80px; }
+  .reflection { padding: 12px; }
+  .submit-line .btn { width: 100%; }
+  .prm { grid-template-columns: 100px minmax(0, 1fr) 66px; gap: 6px; }
+  .prm input[type=number] { width: 66px; }
+  .prm label { font-size: 14px; }
+}
+@media (max-width: 420px) {
+  #speedOut { display: none; }
+  .runbar .btn.icon { min-width: 38px; }
+  .speed input { width: 72px; }
+}
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto; } }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <h1>两只齿轮的试验台</h1>
+    <p class="question">什么样的两只齿轮能一齿接一齿、平稳地转下去？<span>换齿轮、挪轴心、转起来看看。</span></p>
+  </header>
+
+  <main class="layout">
+    <div class="leftcol">
+      <section class="stage-wrap" aria-label="齿轮试验台">
+        <div class="stage" id="stage">
+          <canvas id="view" role="img" aria-label="两只外啮合渐开线直齿圆柱齿轮的啮合仿真。拖动右侧齿轮中心的圆点可改变中心距，拖动轮齿可转动齿轮。"></canvas>
+          <p class="boot-msg" id="bootMsg">正在加载……如果一直显示这行字，说明当前查看器没有运行页面脚本。请点右上角“…”，选择“在浏览器打开”（如 Chrome、手机自带浏览器）。</p>
+        </div>
+        <div class="runbar">
+          <button type="button" class="btn primary" id="runBtn">试运行</button>
+          <button type="button" class="btn icon" id="stepBack" aria-label="主动轮倒转一小步">◀</button>
+          <button type="button" class="btn icon" id="stepFwd" aria-label="主动轮正转一小步">▶</button>
+          <label class="speed">转速<input type="range" id="speed" min="2" max="40" step="1" value="10" aria-label="主动轮转速（度每秒）"><output id="speedOut">10°/s</output></label>
+          <button type="button" class="btn small" id="rephaseBtn">重新对齿</button>
+        </div>
+        <p class="feedback" id="feedback" role="status" aria-live="polite"></p>
+      </section>
+
+      <div class="viewbar" id="viewbar" aria-label="观察辅助">
+        <span class="lab">显示</span>
+        <button type="button" class="tog" data-ov="pitch" aria-pressed="false"><i style="--c:#3b7a57"></i>分度圆</button>
+        <button type="button" class="tog" data-ov="base" aria-pressed="false"><i class="dash" style="--c:#7b5bb5"></i>基圆</button>
+        <button type="button" class="tog" data-ov="tiproot" aria-pressed="false"><i class="dot" style="--c:#6b7782"></i>齿顶圆/齿根圆</button>
+        <button type="button" class="tog" data-ov="loa" aria-pressed="false"><i style="--c:#c2410c"></i>作用线</button>
+        <button type="button" class="tog" data-ov="contact" aria-pressed="true"><i class="pt"></i>接触点</button>
+        <button type="button" class="tog" data-ov="readout" aria-pressed="false">转角与转速比</button>
+        <button type="button" class="tog" data-ov="zoom" aria-pressed="false">放大啮合处</button>
+      </div>
+    </div>
+
+    <aside class="panel" aria-label="齿轮与安装">
+      <div class="group">
+        <div class="seg" id="slotSeg" role="radiogroup" aria-label="选择要更换或调整的齿轮">
+          <button type="button" role="radio" aria-checked="true" data-slot="0" style="--c:var(--g1)"><i></i>齿轮 1 <small>主动</small></button>
+          <button type="button" role="radio" aria-checked="false" data-slot="1" style="--c:var(--g2)"><i></i>齿轮 2 <small>从动</small></button>
+        </div>
+        <p class="bin-label">零件盒：点一下装到所选位置。“自定义”用下面的滑块自己调，动滑块时也会自动转为自定义。</p>
+        <div class="bin" id="bin"></div>
+        <div id="params"><p class="tip" id="ctlBoot">参数控件加载中……</p></div>
+        <p class="gear-note" id="gearNote"></p>
+      </div>
+
+      <div class="group">
+        <h2>安装 <span class="unit">· 也可直接拖动齿轮 2 中心的圆点</span></h2>
+        <label class="chk"><input type="checkbox" id="autoFit" checked>换齿轮或改参数后，自动靠拢到刚好接触</label>
+        <div class="prm">
+          <label for="aRange">中心距 <em>a</em></label>
+          <input type="range" id="aRange" min="50" max="70" step="0.01" value="60" style="--c:var(--g2)">
+          <input type="number" id="aNum" min="50" max="70" step="0.01" value="60" aria-label="中心距（mm）">
+        </div>
+        <div class="row">
+          <button type="button" class="btn small" id="fitBtn">靠拢到刚好接触</button>
+          <button type="button" class="btn small" id="restoreBtn">恢复初始安装</button>
+        </div>
+        <p class="tip">单位 mm。“恢复初始安装”：两只齿轮换回甲、乙并重新靠拢（自定义的参数仍保留在“自定义”里）。也可以用手指或鼠标拨动某只齿轮的轮齿，让它转一点点。</p>
+      </div>
+
+      <div class="group">
+        <h2>试验记录</h2>
+        <div class="row">
+          <button type="button" class="btn small" id="saveTrialBtn">记下这次试验</button>
+          <span class="tip" id="trialTip" style="margin:0"></span>
+        </div>
+        <table class="trials" id="trials" hidden>
+          <thead><tr><th>#</th><th>齿轮 1</th><th>齿轮 2</th><th><em>a</em></th><th>看到的现象</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <div class="group">
+        <button type="button" class="plain-link" id="whyBtn" aria-expanded="false">想看看原因？</button>
+        <div class="why" id="why" hidden></div>
+      </div>
+    </aside>
+  </main>
+
+  <section class="reflection" aria-label="观察总结与提交">
+    <h2>我的发现</h2>
+    <p class="ask">你改变了哪些条件后，发现两只齿轮能够或不能持续平稳地传动？你看到的证据是什么？</p>
+    <textarea id="answer" maxlength="1500" placeholder="根据你自己的试验写，可以举出具体的齿轮和中心距。"></textarea>
+    <label class="namefield">姓名（必填）
+      <input id="studentName" type="text" maxlength="24" autocomplete="name" placeholder="请输入姓名">
+    </label>
+    <div class="submit-line">
+      <button type="button" class="btn primary" id="exportJsonBtn">生成 JSON 作业文件</button>
+      <button type="button" class="btn" id="copyJsonBtn">复制编码后的 JSON</button>
+      <a class="btn wps-open" id="wpsFormLink" href="#" target="_blank" rel="noopener noreferrer" hidden>打开 WPS 作业收集表单</a>
+    </div>
+    <p id="assignmentStatus" class="submit-status" role="status" aria-live="polite"></p>
+    <details class="json-backup" id="jsonBackupPanel" hidden>
+      <summary>显示编码后的作业数据（备用）</summary>
+      <textarea id="jsonPreview" readonly rows="6" aria-label="编码后的 JSON 数据"></textarea>
+    </details>
+  </section>
+
+  <section class="teacher" id="teacher" hidden aria-label="教师查看"></section>
+
+</div>
+<script>
+/* 兼容与启动诊断：脚本出错时在画面上给出提示，而不是一片空白。 */
+(function () {
+  window.addEventListener('error', function (e) {
+    var bm = document.getElementById('bootMsg');
+    if (bm) { bm.className = 'boot-msg err'; bm.textContent = '页面脚本出错：' + (e && e.message ? e.message : '未知错误') + '。请换用 Chrome、Edge 或手机自带浏览器打开。'; }
+  });
+  if (!Math.hypot) Math.hypot = function () { var s = 0; for (var i = 0; i < arguments.length; i++) s += arguments[i] * arguments[i]; return Math.sqrt(s); };
+  if (!window.performance || !performance.now) { var t0 = Date.now(); window.performance = window.performance || {}; performance.now = function () { return Date.now() - t0; }; }
+  if (!window.requestAnimationFrame) window.requestAnimationFrame = window.webkitRequestAnimationFrame || function (cb) { return setTimeout(function () { cb(performance.now()); }, 16); };
+  if (window.Element && !Element.prototype.remove) Element.prototype.remove = function () { if (this.parentNode) this.parentNode.removeChild(this); };
+  if (typeof Path2D === 'undefined') {
+    var bm = document.getElementById('bootMsg');
+    if (bm) { bm.className = 'boot-msg err'; bm.textContent = '当前浏览器版本过旧（不支持 Path2D 绘图），请换用 Chrome、Edge、Safari 或手机自带浏览器的新版本打开。'; }
+  }
+})();
+</script>
+<script id="gearcore-src">
+/*!
+ * GearCore —— 外啮合渐开线直齿圆柱齿轮：齿形生成 + 刚体接触运动学（二维）
+ * 单位：mm、rad。齿轮 1 轴心 O1=(0,0)，齿轮 2 轴心 O2=(a,0)，y 轴向上。
+ * 1) 齿形：以标准基本齿条（模数 m、齿形角 α、刀具齿顶 (ha*+c*)m、齿顶圆角 ρ=c*m/(1−sinα)）
+ *    范成加工，x=0。齿侧在极坐标下表示为“半齿角 H(r)”：H(r)=min(解析渐开线, 刀具各点相对轨迹)。
+ *    因而根切（刀尖轨迹切入渐开线）与齿根过渡曲线均来自真实包络，而不是“齿根圆+直线”。
+ * 2) 运动：主动轮转角 θ1 给定；对从动轮转角 θ2，每个轮廓采样点给出“不穿入对方轮齿”的转角区间，
+ *    取交集 [lo,hi]。从动轮为“被推动才转”的惰性从动件（带轻载）：θ2 ← clamp(θ2, lo, hi)。
+ *    lo>hi ⇒ 两侧同时受挤（卡死）；点落入对方齿根圆以内 ⇒ 齿顶—齿根径向相碰。
+ *    不强行按 −z1/z2 同步；传动比完全由接触几何决定。
+ */
+(function (root, factory) {
+  if (typeof module === 'object' && module.exports) module.exports = factory();
+  else root.GearCore = factory();
+})(typeof self !== 'undefined' ? self : this, function () {
+  'use strict';
+  var PI = Math.PI, TWO_PI = 2 * PI, DEG = PI / 180;
+
+  function inv(x) { return Math.tan(x) - x; }
+  function clamp(x, a, b) { return x < a ? a : (x > b ? b : x); }
+  function wrapPer(x, per) { return x - per * Math.round(x / per); }      // (−per/2, per/2]
+  function wrapPi(x) { return wrapPer(x, TWO_PI); }
+
+  /* ---------- 单个齿轮 ---------- */
+  function makeGear(p) {
+    var m = +p.m, z = Math.round(+p.z), al = (+p.alpha) * DEG, has = +p.ha, cs = +p.c;
+    var ha = has * m, c = cs * m, hf = ha + c;
+    var r = m * z / 2, rb = r * Math.cos(al), ra0 = r + ha, rfNom = r - hf;
+    var invA = inv(al), pitchAng = TWO_PI / z;
+    var notes = [];
+    function Hinv(R) {                                 // 渐开线半齿角（R ≥ rb）
+      var ar = Math.acos(clamp(rb / R, -1, 1));
+      return PI / (2 * z) + invA - inv(ar);
+    }
+    // ---- 基本齿条（刀具）右齿侧：x = q − d·tanα（d 为向轮心的深度）----
+    var q = PI * m / 4, sA = Math.sin(al), cA = Math.cos(al), tA = Math.tan(al);
+    var rho = c / (1 - sA), dF, xc, tipDepth = hf, apex = false;
+    xc = q - (hf - rho * (1 - sA)) * tA - rho * cA;
+    if (q - hf * tA <= 0) {                            // 刀具齿在 hf 之前已成尖顶
+      rho = 0; apex = true; tipDepth = q / tA; xc = 0;
+      notes.push('cutter_tip_pointed');
+    } else if (xc < 0) {                               // 圆角过大：取全圆弧齿顶
+      rho = (q - hf * tA) / (cA - (1 - sA) * tA); xc = 0;
+      notes.push('cutter_full_round');
+    }
+    dF = tipDepth - rho * (1 - sA);                    // 直线齿侧终止深度（=ha，若圆角正常）
+    var rf = r - tipDepth;
+    if (rho === 0) dF = tipDepth;
+    // 齿顶变尖检查
+    var ra = ra0, pointed = false;
+    if (Hinv(ra0) <= 0) {
+      var lo = Math.max(rb, r * 0.5), hi = ra0;
+      for (var it = 0; it < 60; it++) { var mid = (lo + hi) / 2; if (Hinv(mid) > 0) lo = mid; else hi = mid; }
+      ra = lo; pointed = true; notes.push('tip_pointed');
+    }
+    // 渐开线由齿条直线段范成的最低半径（直线段最深点 dF 在作用线上的位置）
+    var PN = r * sA, e = dF / sA;
+    var rGen = Math.sqrt(rb * rb + Math.pow(Math.max(0, PN - e), 2));
+    var rInvLow = Math.max(rb, rGen);
+
+    // ---- 刀具采样点（右侧）----
+    var rackPts = [], i;
+    var nFl = 14;
+    for (i = 0; i <= nFl; i++) {                       // 直线齿侧，靠近 dF 处加密
+      var u = i / nFl, d = dF * (1 - (1 - u) * (1 - u));
+      rackPts.push([q - d * tA, d]);
+    }
+    if (rho > 0) {
+      var cx = q - dF * tA - rho * cA, cdep = tipDepth - rho;
+      for (i = 1; i <= 16; i++) {
+        var t = al + (PI / 2 - al) * i / 16;
+        rackPts.push([cx + rho * Math.cos(t), cdep + rho * Math.sin(t)]);
+      }
+    }
+    // ---- 半齿角表：r ∈ [rf, ra] 均匀网格 ----
+    var N = 420, dr = (ra - rf) / N, tab = new Float64Array(N + 1);
+    for (i = 0; i <= N; i++) tab[i] = 1e9;
+    var toothC = PI / 2 - PI / z;
+    for (var k = 0; k < rackPts.length; k++) {
+      var x0 = rackPts[k][0], y0 = r - rackPts[k][1];
+      if (y0 >= ra) continue;
+      var L = Math.sqrt(ra * ra - y0 * y0);
+      var p0 = (-x0 - L) / r, p1 = (-x0 + L) / r, S = 420, prevR = -1, prevC = 0;
+      for (var s = 0; s <= S; s++) {
+        var ph = p0 + (p1 - p0) * s / S, X0 = x0 + r * ph;
+        var cph = Math.cos(ph), sph = Math.sin(ph);
+        var X = X0 * cph - y0 * sph, Y = X0 * sph + y0 * cph;
+        var R = Math.sqrt(X * X + Y * Y), C = wrapPi(Math.atan2(Y, X) - toothC);
+        if (prevR >= 0) {
+          var rmin = Math.min(prevR, R), rmax = Math.max(prevR, R);
+          var j0 = Math.max(0, Math.ceil((rmin - rf) / dr)), j1 = Math.min(N, Math.floor((rmax - rf) / dr));
+          for (var j = j0; j <= j1; j++) {
+            var rj = rf + j * dr, w = (rmax - rmin) < 1e-12 ? 0 : (rj - prevR) / (R - prevR);
+            var cj = prevC + (C - prevC) * w;
+            if (cj < tab[j]) tab[j] = cj;
+          }
+        }
+        prevR = R; prevC = C;
+      }
+    }
+    var hRoot = PI / z - Math.atan2(xc, rf);
+    tab[0] = Math.min(tab[0], hRoot);
+    var undercutDepth = 0, rs = ra, cutMax = 0, cutTopR = rInvLow;
+    for (i = 0; i <= N; i++) {
+      var rr = rf + i * dr;
+      if (rr >= rInvLow - 1e-12) {
+        var hv = Hinv(rr), cut = (hv - tab[i]) * rr;           // 刀尖轨迹切入渐开线的弧长深度
+        if (cut > cutMax) cutMax = cut;
+        if (cut > 1e-3 * m) cutTopR = rr;
+        tab[i] = Math.min(tab[i], hv);
+      }
+      if (tab[i] > PI / z) tab[i] = PI / z;
+    }
+    // 有效渐开线起点 rs：自上而下，H 一直等于解析渐开线的最低半径
+    // 根切判据：刀具轨迹切入本应由直线齿侧范成的渐开线超过 0.001m
+    var undercut = cutMax > 1e-3 * m;
+    rs = rInvLow;
+    if (undercut) {
+      rs = Math.min(ra, cutTopR + dr);
+      for (i = Math.ceil((rs - rf) / dr); i <= N; i++) {          // 向上直到与渐开线重合
+        var rr2 = rf + i * dr; if (rr2 > ra) break;
+        if (Hinv(rr2) - tab[i] < 1e-9) { rs = rr2; break; }
+      }
+      undercutDepth = rs - rInvLow;
+    }
+    var severed = false;
+    for (i = 0; i <= N; i++) if (tab[i] < 0) { severed = true; tab[i] = 0; }
+    if (severed) notes.push('tooth_root_severed');
+
+    function H(R) {
+      if (R >= rs) return R > ra ? Hinv(ra) : Math.max(0, Hinv(R));
+      if (R <= rf) return PI / z;                       // 齿根圆以内：实体
+      var f = (R - rf) / dr, j = Math.floor(f); if (j >= N) return tab[N];
+      var w = f - j; return tab[j] * (1 - w) + tab[j + 1] * w;
+    }
+    // 齿侧采样（用于绘图与接触检测）
+    var side = { r: [], h: [] };
+    var nLow = Math.max(6, Math.ceil(22 * (rs - rf) / Math.max(1e-9, ra - rf)));
+    for (i = 0; i < nLow; i++) { var rr3 = rf + (rs - rf) * i / nLow; side.r.push(rr3); side.h.push(i === 0 ? Math.min(hRoot, H(rf + 1e-9)) : H(rr3)); }
+    var tS = Math.sqrt(Math.max(0, (rs / rb) * (rs / rb) - 1)), tE = Math.sqrt(Math.max(0, (ra / rb) * (ra / rb) - 1)), nInv = 34;
+    for (i = 0; i <= nInv; i++) {
+      var tt = tS + (tE - tS) * i / nInv, rr4 = rb * Math.sqrt(1 + tt * tt);
+      if (i === 0) rr4 = rs; if (i === nInv) rr4 = ra;
+      side.r.push(rr4); side.h.push(H(rr4));
+    }
+    var sa = 2 * ra * H(ra);
+    return {
+      m: m, z: z, alphaDeg: +p.alpha, alpha: al, haStar: has, cStar: cs,
+      r: r, rb: rb, ra: ra, raNominal: ra0, rf: rf, rfNominal: rfNom, ha: ha, hf: hf,
+      p: PI * m, pb: PI * m * Math.cos(al), pitchAng: pitchAng,
+      rho: rho, rGen: rGen, rInvLow: rInvLow, rs: rs, undercut: undercut, undercutDepth: undercutDepth,
+      undercutCut: cutMax, undercutRisk: dF > r * sA * sA + 1e-9, rackLineDepth: dF, pointed: pointed, tipThickness: sa, notes: notes, H: H, Hinv: Hinv, side: side, hRoot: hRoot
+    };
+  }
+
+  /* ---------- 齿轮对：理论量（供核验与教师说明） ---------- */
+  function pairTheory(g1, g2, a) {
+    var T = {};
+    T.mMatch = Math.abs(g1.m - g2.m) < 1e-9;
+    T.alphaMatch = Math.abs(g1.alphaDeg - g2.alphaDeg) < 1e-9;
+    T.standardPair = T.mMatch && T.alphaMatch;
+    T.pb1 = g1.pb; T.pb2 = g2.pb; T.pbMatch = Math.abs(g1.pb - g2.pb) < 1e-6;
+    T.a0 = g1.r + g2.r;                       // 两分度圆相切的中心距（m 相同时 = m(z1+z2)/2）
+    T.i12 = g2.z / g1.z;
+    T.clear12 = a - g1.ra - g2.rf;            // 齿轮1齿顶 — 齿轮2齿根 的径向间隙
+    T.clear21 = a - g2.ra - g1.rf;
+    T.reach = a < g1.ra + g2.ra;              // 齿顶圆是否相交
+    var sb = g1.rb + g2.rb;
+    T.cosAw = sb / a;
+    T.aw = T.cosAw < 1 ? Math.acos(T.cosAw) : NaN;
+    T.epsFormula = NaN; T.epsValid = false; T.lenAction = NaN;
+    if (T.pbMatch && T.cosAw < 1 && T.reach) {
+      var A = Math.sqrt(Math.max(0, g1.ra * g1.ra - g1.rb * g1.rb));
+      var B = Math.sqrt(Math.max(0, g2.ra * g2.ra - g2.rb * g2.rb));
+      var g = A + B - a * Math.sin(T.aw);
+      T.lenAction = g; T.epsFormula = g / g1.pb;
+      // 公式只在接触全部落在两轮有效渐开线段时成立：检查作用线起止点半径
+      var N1N2 = a * Math.sin(T.aw);
+      var startOn1 = Math.sqrt(g1.rb * g1.rb + Math.pow(N1N2 - B, 2));   // 齿轮1上接触最低点半径
+      var startOn2 = Math.sqrt(g2.rb * g2.rb + Math.pow(N1N2 - A, 2));
+      T.lowContactR1 = startOn1; T.lowContactR2 = startOn2;
+      T.involuteOK1 = (N1N2 - B) >= 0 && startOn1 >= g1.rs - 1e-6;
+      T.involuteOK2 = (N1N2 - A) >= 0 && startOn2 >= g2.rs - 1e-6;
+      T.epsValid = g > 0 && T.involuteOK1 && T.involuteOK2;
+    }
+    // 设计无侧隙齿厚 s=πm/2 时，工作节圆上的圆周侧隙（仅标准配对、αw 存在时）
+    T.backlashTheory = NaN;
+    if (T.standardPair && T.cosAw < 1) {
+      var al = g1.alpha, aw = T.aw, rw1 = g1.rb / Math.cos(aw), rw2 = g2.rb / Math.cos(aw);
+      var s1w = 2 * rw1 * (PI / (2 * g1.z) + inv(al) - inv(aw));
+      var s2w = 2 * rw2 * (PI / (2 * g2.z) + inv(al) - inv(aw));
+      var pw = TWO_PI * rw1 / g1.z;
+      T.backlashTheory = pw - s1w - s2w;      // 沿工作节圆的圆周侧隙（mm）
+      T.rw2 = rw2;
+    }
+    return T;
+  }
+
+  /* ---------- 接触区间 ---------- */
+  function meshTeeth(g, dist, gOther, centerDir, th) {
+    // 返回位于啮合区附近的齿序号（齿中心角 = th + k·pitch）
+    var ra = g.ra, rb2 = gOther.ra;
+    if (dist >= ra + rb2) return [];
+    var cb = (ra * ra + dist * dist - rb2 * rb2) / (2 * ra * dist);
+    var beta = Math.acos(clamp(cb, -1, 1)) + g.pitchAng * 0.75 + 0.02;
+    var list = [], kc = Math.round((centerDir - th) / g.pitchAng), span = Math.ceil(beta / g.pitchAng) + 1;
+    for (var k = kc - span; k <= kc + span; k++) {
+      var cang = th + k * g.pitchAng;
+      if (Math.abs(wrapPi(cang - centerDir)) <= beta) list.push(k);
+    }
+    return list;
+  }
+
+  /* 单点约束：点 P（世界坐标）相对另一齿轮 gB（中心 (ox,0)、转角 thB）给出的允许区间。
+     返回 {skip} / {radial} / {q,w}；区间（相对该轮转角增量）= [q−w, q+w]。 */
+  function pointVs(px, py, gB, ox, thB) {
+    var dx = px - ox, dy = py, rho = Math.sqrt(dx * dx + dy * dy);
+    if (rho >= gB.ra) return null;
+    if (rho < gB.rf - 1e-9) return { radial: true, rho: rho };
+    var gam = Math.atan2(dy, dx);
+    return { q: wrapPer(gam - thB - PI / gB.z, gB.pitchAng), w: PI / gB.z - gB.H(rho), rho: rho };
+  }
+  // 齿轮 1 上半径 R 处的齿侧点对齿轮 2 的约束：返回 [U, L, px, py]（θ2 增量的上下界）
+  function c1At(g1, g2, a, th2, cang, s, R) {
+    var ang = cang + s * g1.H(R), px = R * Math.cos(ang), py = R * Math.sin(ang);
+    var v = pointVs(px, py, g2, a, th2);
+    if (!v) return null;
+    if (v.radial) return { radial: true, px: px, py: py };
+    return { U: v.q + v.w, L: v.q - v.w, px: px, py: py, out: (v.q > v.w + 1e-9 || v.q < -v.w - 1e-9) };
+  }
+  // 齿轮 2 上半径 R 处的齿侧点对齿轮 1 的约束，按 θ2 线性化
+  function c2At(g1, g2, a, th1, th2, cang, s, R) {
+    var ang = cang + s * g2.H(R), ex = R * Math.cos(ang), ey = R * Math.sin(ang);
+    var qx = a + ex, qy = ey;
+    var v = pointVs(qx, qy, g1, 0, th1);
+    if (!v) return null;
+    if (v.radial) return { radial: true, px: qx, py: qy };
+    var gd = (qx * ex + qy * ey) / (v.rho * v.rho);          // dγ1/dθ2
+    var out = (v.q > v.w + 1e-9 || v.q < -v.w - 1e-9);
+    if (Math.abs(gd) < 1e-9) return { U: Infinity, L: -Infinity, px: qx, py: qy, out: out };
+    var A1 = (-v.w - v.q) / gd, B1 = (v.w - v.q) / gd;
+    return { U: Math.max(A1, B1), L: Math.min(A1, B1), px: qx, py: qy, out: out };
+  }
+  // 在相邻采样之间对连续齿廓做黄金分割细化（消除离散采样造成的“点穿面”误差）
+  function refine(f, Ra, Rb, sign) {
+    var gr = 0.6180339887498949, x1 = Rb - gr * (Rb - Ra), x2 = Ra + gr * (Rb - Ra);
+    function val(R) { var c = f(R); if (!c || c.radial) return Infinity; return sign > 0 ? c.U : -c.L; }
+    var f1 = val(x1), f2 = val(x2);
+    for (var it = 0; it < 22; it++) {
+      if (f1 < f2) { Rb = x2; x2 = x1; f2 = f1; x1 = Rb - gr * (Rb - Ra); f1 = val(x1); }
+      else { Ra = x1; x1 = x2; f1 = f2; x2 = Ra + gr * (Rb - Ra); f2 = val(x2); }
+    }
+    var R = f1 < f2 ? x1 : x2; return f(R);
+  }
+
+  function interval(g1, g2, a, th1, th2, wantPts, tolMul) {
+    var lo = -Infinity, hi = Infinity, radial = false, any = false;
+    var cand = wantPts ? [] : null, bad = wantPts ? [] : null;
+    var n, s, i;
+    var groups = [];
+    function scan(g, teeth, thBase, fn) {
+      var S = g.side, nS = S.r.length;
+      for (n = 0; n < teeth.length; n++) {
+        var cang = thBase + teeth[n] * g.pitchAng;
+        for (s = -1; s <= 1; s += 2) {
+          var bestU = Infinity, iU = -1, bestL = -Infinity, iL = -1;
+          for (i = 0; i < nS; i++) {
+            var c = fn(cang, s, S.r[i]);
+            if (!c) continue;
+            any = true;
+            if (c.radial) { radial = true; if (bad) bad.push([c.px, c.py]); continue; }
+            if (bad && c.out) bad.push([c.px, c.py]);
+            if (c.U < bestU) { bestU = c.U; iU = i; }
+            if (c.L > bestL) { bestL = c.L; iL = i; }
+          }
+          if (iU >= 0 || iL >= 0) groups.push({ fn: fn, cang: cang, s: s, S: S, iU: iU, iL: iL, U: bestU, L: bestL });
+          if (bestU < hi) hi = bestU; if (bestL > lo) lo = bestL;
+        }
+      }
+    }
+    function refineGroups() {
+      // 只细化接近最紧约束的齿侧（离散采样误差远小于 REF_MARGIN）
+      var REF_MARGIN = 2e-3, k, G, nS;
+      var hi0 = hi, lo0 = lo;
+      for (k = 0; k < groups.length; k++) {
+        G = groups[k]; nS = G.S.r.length;
+        var f = (function (G) { return function (R) { return G.fn(G.cang, G.s, R); }; })(G);
+        if (G.iU >= 0 && G.U - hi0 < REF_MARGIN) {
+          var cr = refine(f, G.S.r[Math.max(0, G.iU - 1)], G.S.r[Math.min(nS - 1, G.iU + 1)], 1);
+          if (cr && !cr.radial && cr.U < G.U) G.U = cr.U;
+          G.pu = cr && !cr.radial ? [cr.px, cr.py] : null;
+          if (G.U < hi) hi = G.U;
+        }
+        if (G.iL >= 0 && lo0 - G.L < REF_MARGIN) {
+          var cl = refine(f, G.S.r[Math.max(0, G.iL - 1)], G.S.r[Math.min(nS - 1, G.iL + 1)], -1);
+          if (cl && !cl.radial && cl.L > G.L) G.L = cl.L;
+          G.pl = cl && !cl.radial ? [cl.px, cl.py] : null;
+          if (G.L > lo) lo = G.L;
+        }
+      }
+    }
+    var t1 = meshTeeth(g1, a, g2, 0, th1);
+    scan(g1, t1, th1, function (cang, s, R) { return c1At(g1, g2, a, th2, cang, s, R); });
+    var t2 = meshTeeth(g2, a, g1, PI, th2);
+    scan(g2, t2, th2, function (cang, s, R) { return c2At(g1, g2, a, th1, th2, cang, s, R); });
+    if (!radial) refineGroups();
+    var res = { lo: th2 + lo, hi: th2 + hi, radial: radial, any: any };
+    if (cand) {
+      var tol = (tolMul || 1e-6) * g1.m / g2.r, hiPts = [], loPts = [];
+      for (i = 0; i < groups.length; i++) {
+        var Gp = groups[i];
+        if (Gp.pu && Gp.U - hi < tol) hiPts.push(Gp.pu);
+        if (Gp.pl && lo - Gp.L < tol) loPts.push(Gp.pl);
+      }
+      res.hiPts = hiPts; res.loPts = loPts; res.bad = bad;
+    }
+    return res;
+  }
+
+  // 侧隙：分别在上、下界处重新求值（齿轮 2 点的线性化只在当前角附近精确）
+  function freePlay(g1, g2, a, th1, th2) {
+    var iv = interval(g1, g2, a, th1, th2);
+    if (iv.radial || !iv.any) return { lo: iv.lo, hi: iv.hi, radial: iv.radial, any: iv.any };
+    var lo = iv.lo, hi = iv.hi;
+    if (lo > hi + jamTol(g1, g2)) return { lo: lo, hi: hi, jam: true, any: true };
+    for (var it = 0; it < 4; it++) {
+      var a1 = interval(g1, g2, a, th1, hi); if (a1.radial) break; hi = a1.hi;
+      var a2 = interval(g1, g2, a, th1, lo); if (a2.radial) break; lo = a2.lo;
+    }
+    return { lo: lo, hi: hi, any: true, jam: lo > hi + jamTol(g1, g2) };
+  }
+  // 数值容差：允许的“穿入”量 0.003m（约为 m=2 时的 6 µm），用于吸收齿形表插值误差；
+  // 掠过式相切（如范成小齿轮与大齿轮齿顶的临界情形）不应被判为卡死。
+  var JAM_K = 0.003;
+  function jamTol(g1, g2) { return JAM_K * Math.min(g1.m, g2.m) / g2.ra; }
+  function clampSoft(x, lo, hi) { return lo <= hi ? clamp(x, lo, hi) : (x > hi ? hi : (x < lo ? lo : x)); }
+  // 惰性从动件：只在被推动时转动
+  function settle(g1, g2, a, th1, th2start) {
+    var th = th2start, iv = null, tolJ = jamTol(g1, g2);
+    for (var it = 0; it < 7; it++) {
+      iv = interval(g1, g2, a, th1, th);
+      if (iv.radial) return { th2: th2start, ok: false, jam: true, radial: true, iv: iv };
+      if (!iv.any) return { th2: th2start, ok: true, jam: false, free: true, iv: iv };
+      if (iv.lo > iv.hi + tolJ) { th = (iv.lo + iv.hi) / 2; continue; }
+      var nt = clampSoft(th2start, iv.lo, iv.hi);
+      if (Math.abs(nt - th) < 1e-11) return { th2: nt, ok: true, jam: false, iv: iv };
+      th = nt;
+    }
+    iv = interval(g1, g2, a, th1, th);
+    if (iv.radial) return { th2: th2start, ok: false, jam: true, radial: true, iv: iv };
+    if (iv.lo > iv.hi + tolJ) return { th2: th2start, ok: false, jam: true, radial: false, iv: iv };
+    return { th2: clampSoft(th, iv.lo, iv.hi), ok: true, jam: false, iv: iv };
+  }
+
+  // 在一个齿距范围内寻找可装入的从动轮转角（prefer：优先靠近的角度）
+  function findPhase(g1, g2, a, th1, prefer, side) {
+    var per = g2.pitchAng, N = 36, best = null, worst = null;
+    for (var i = 0; i < N; i++) {
+      var g = prefer + wrapPer(i * per / N, per);
+      var th = g, ok = false, iv;
+      for (var it = 0; it < 6; it++) {
+        iv = interval(g1, g2, a, th1, th);
+        if (iv.radial) return { ok: false, radial: true, th2: prefer };
+        if (!iv.any) return { ok: true, free: true, th2: prefer };
+        if (iv.lo <= iv.hi + jamTol(g1, g2)) {
+          var nt = clampSoft(th, iv.lo, iv.hi);
+          if (Math.abs(nt - th) < 1e-11) { ok = true; break; }
+          th = nt;
+        } else th = (iv.lo + iv.hi) / 2;
+      }
+      if (ok) {
+        var target = side === 'mid' ? (iv.lo + iv.hi) / 2 : iv.hi;
+        var dist = Math.abs(wrapPer(target - prefer, TWO_PI));
+        var cand = { ok: true, th2: target, lo: iv.lo, hi: iv.hi, backlash: iv.hi - iv.lo, dist: dist };
+        if (!best || (side === 'near' ? dist < best.dist - 1e-9 : cand.backlash > best.backlash + 1e-9)) best = cand;
+      } else {
+        var over = iv.lo - iv.hi;
+        if (!worst || over < worst.over) worst = { ok: false, th2: (iv.lo + iv.hi) / 2, over: over };
+      }
+    }
+    if (best) {
+      if (side === 'near') {
+        var st = settle(g1, g2, a, th1, clamp(prefer, best.lo, best.hi));
+        best.th2 = st.th2;
+      } else {
+        var st2 = settle(g1, g2, a, th1, best.hi);
+        best.th2 = st2.th2;
+      }
+      return best;
+    }
+    return worst || { ok: false, th2: prefer };
+  }
+
+  function clusterCount(pts, minD) {
+    var cs = [];
+    for (var i = 0; i < pts.length; i++) {
+      var found = false;
+      for (var j = 0; j < cs.length; j++) {
+        var dx = pts[i][0] - cs[j][0], dy = pts[i][1] - cs[j][1];
+        if (dx * dx + dy * dy < minD * minD) { found = true; break; }
+      }
+      if (!found) cs.push(pts[i]);
+    }
+    return cs;
+  }
+
+  /* ---------- 连续运转扫描（主动轮逆时针）：可分片执行，避免阻塞界面 ---------- */
+  function createSweep(g1, g2, a, th1, th2, opt) {
+    opt = opt || {};
+    var per1 = g1.pitchAng, steps = opt.stepsPerPitch || 60, warm = opt.warm == null ? 1 : opt.warm, meas = opt.pitches || 3;
+    var dth = per1 / steps, i0 = g1.z / g2.z, light = !!opt.light;
+    var M = { steps: 0, contactSteps: 0, pauseSteps: 0, devSteps: 0, maxDev: 0, jam: false, radial: false,
+      noContact: true, pairSum: 0, pairN: 0, pairMax: 0, pairMin: 99, minBacklash: Infinity, maxBacklash: 0,
+      te: [], ratio: [], startTh1: th1, startTh2: th2, stepsPerPitch: steps, pitches: meas };
+    var total = Math.round((warm + meas) * steps), s = 0, cur1 = th1, cur2 = th2, te0 = null, done = false;
+    var minD = 0.45 * Math.min(g1.pb, g2.pb), tolPairs = 2e-6;
+    var st0 = settle(g1, g2, a, cur1, cur2);
+    if (st0.radial) { M.radial = true; M.jam = true; done = true; }
+    else if (st0.jam) { M.jam = true; M.jamAt = 0; done = true; }
+    else cur2 = st0.th2;
+    function step(n) {
+      for (var k = 0; k < n && !done; k++) {
+        s++;
+        var n1 = cur1 + dth, st = settle(g1, g2, a, n1, cur2);
+        if (st.radial) { M.radial = true; M.jam = true; done = true; break; }
+        if (st.jam) { M.jam = true; M.jamAt = (n1 - th1) / DEG; done = true; break; }
+        var moved = cur2 - st.th2;                       // 从动轮顺时针为正
+        if (st.iv && st.iv.any) M.noContact = false;
+        if (s > warm * steps) {
+          M.steps++;
+          var ratio = moved / dth;
+          M.ratio.push(ratio);
+          var teNow = st.th2 + i0 * (n1 - th1);
+          if (te0 === null) te0 = teNow;
+          M.te.push(teNow - te0);
+          if (moved > 1e-12) {
+            M.contactSteps++;
+            var dev = Math.abs(ratio / i0 - 1);
+            if (dev > M.maxDev) M.maxDev = dev;
+            if (dev > 0.015) M.devSteps++;
+            if (!light) {
+              var ivp = interval(g1, g2, a, n1, st.th2, true, tolPairs);
+              var np = clusterCount(ivp.hiPts, minD).length;
+              M.pairSum += np; M.pairN++; if (np > M.pairMax) M.pairMax = np; if (np < M.pairMin) M.pairMin = np;
+              if (M.steps % 6 === 1) {
+                var fp = freePlay(g1, g2, a, n1, st.th2), bl = (fp.hi - fp.lo) * g2.r;
+                if (bl < M.minBacklash) M.minBacklash = bl; if (bl > M.maxBacklash) M.maxBacklash = bl;
+              }
+            }
+          } else M.pauseSteps++;
+        }
+        cur1 = n1; cur2 = st.th2;
+        if (s >= total) done = true;
+      }
+      return done;
+    }
+    function result() {
+      M.endTh1 = cur1; M.endTh2 = cur2;
+      M.pauseFrac = M.steps ? M.pauseSteps / M.steps : 0;
+      M.devFrac = M.contactSteps ? M.devSteps / M.contactSteps : 0;
+      M.meanPairs = M.pairN ? M.pairSum / M.pairN : 0;
+      var mn = Infinity, mx = -Infinity; for (var i = 0; i < M.te.length; i++) { if (M.te[i] < mn) mn = M.te[i]; if (M.te[i] > mx) mx = M.te[i]; }
+      M.teRange = M.te.length ? (mx - mn) : 0;
+      var ssum = 0; for (var j = 0; j < M.ratio.length; j++) ssum += M.ratio[j];
+      M.meanRatio = M.ratio.length ? ssum / M.ratio.length : 0;
+      if (M.minBacklash === Infinity) M.minBacklash = NaN;
+      M.cls = classify(M);
+      return M;
+    }
+    return { step: step, result: result, isDone: function () { return done; }, progress: function () { return s / total; } };
+  }
+  function sweep(g1, g2, a, th1, th2, opt) {
+    var S = createSweep(g1, g2, a, th1, th2, opt); while (!S.step(100)); return S.result();
+  }
+
+  function classify(M) {
+    if (M.radial) return 'radial_clash';
+    if (M.jam) return 'jam';
+    if (M.noContact || M.contactSteps === 0) return 'no_contact';
+    if (M.devFrac > 0.25) return 'irregular';
+    if (M.pauseFrac > 0.004) return 'gap';
+    if (M.maxDev > 0.002) return 'irregular';
+    return 'smooth';
+  }
+
+  // 靠拢：在当前齿轮下寻找“刚好能转过若干齿距而不卡”的最小中心距。
+  // 判据 okAt(a)：能找到不重叠的相位，且主动轮转过 1.5 个齿距不卡（容差收紧到 0.0004 m）。
+  // 假设 okAt 对 a 单调（a 越大越不易卡），用“估计值 → 向两侧扩展找到区间 → 二分”求解。
+  // createFit 每调用一次 step() 只做一次 okAt，便于界面分帧执行、不冻结页面。
+  function invInv(y) {                                 // 解 inv(x) = y（0 < x < π/2）
+    var x = Math.pow(3 * y, 1 / 3);
+    for (var i = 0; i < 30; i++) { var t = Math.tan(x), f = t - x - y, d = t * t; if (d < 1e-14) break; var nx = x - f / d; if (nx <= 0) nx = x / 2; if (nx >= PI / 2) nx = (x + PI / 2) / 2; if (Math.abs(nx - x) < 1e-13) { x = nx; break; } x = nx; }
+    return x;
+  }
+  function fitBounds(g1, g2) {
+    return { lo: Math.max(g1.ra + g2.rf, g2.ra + g1.rf, g1.rb + g2.rb + 1e-6), hi: g1.ra + g2.ra };
+  }
+  // 起始估计：基节相等时取理论无侧隙中心距（x=0，分度圆齿厚 = 半齿距）：
+  //   inv α′ = (z1·inv α1 + z2·inv α2)/(z1+z2)，a = (rb1+rb2)/cos α′；m、α 都相同时即 r1+r2。
+  // 基节不等时没有公式，取 r1+r2。结果总会由 okAt 实测核实，估计只决定从哪里开始找。
+  function fitGuess(g1, g2) {
+    var B = fitBounds(g1, g2), a = g1.r + g2.r;
+    if (Math.abs(g1.pb - g2.pb) < 1e-6) {
+      var y = (g1.z * inv(g1.alphaDeg * DEG) + g2.z * inv(g2.alphaDeg * DEG)) / (g1.z + g2.z), aw = invInv(y);
+      if (isFinite(aw) && aw > 0) a = (g1.rb + g2.rb) / Math.cos(aw);
+    }
+    return Math.min(B.hi - 1e-6, Math.max(B.lo, a));
+  }
+  function createFit(g1, g2) {
+    var B = fitBounds(g1, g2), aLo = B.lo, aTop = B.hi - 1e-6;
+    var lo = null, hi = null, x = fitGuess(g1, g2), done = false, res = null;
+    // 基节相等时估计值已是理论无侧隙位置，从很小的步长开始核实；否则从 0.02m 开始向外扩展。
+    // 区间收缩到 0.004 mm 即停（界面显示到 0.01 mm），这样中低端手机上也只需少量检验。
+    var pbEq = Math.abs(g1.pb - g2.pb) < 1e-6;
+    var dl = pbEq ? 0.004 : 0.02 * Math.min(g1.m, g2.m), tolA = 0.004, calls = 0;
+    function okAt(a) {
+      var keep = JAM_K; JAM_K = 0.0004;               // 靠拢时用更严的容差，避免“靠得过紧”
+      try {
+        var ph = findPhase(g1, g2, a, 0, PI + PI / g2.z, 'max');
+        if (!ph.ok) return false;
+        if (ph.free) return true;
+        var M = sweep(g1, g2, a, 0, ph.th2, { stepsPerPitch: 40, warm: 0, pitches: 1.5, light: true });
+        return !M.jam;
+      } finally { JAM_K = keep; }
+    }
+    function finish(a, ok, by) { done = true; res = { a: Math.ceil(a * 1000 - 1e-6) / 1000, ok: ok, calls: calls }; if (by) res.limitedBy = by; }
+    function step() {
+      if (done) return true;
+      calls++;
+      var ok = okAt(x);
+      if (ok) hi = x; else lo = x;
+      if (hi === null) {                                // 还没找到能转的位置：向外拉开
+        if (x >= aTop) { done = true; res = { a: B.hi, ok: false, calls: calls }; return true; }
+        x = Math.min(aTop, x + dl); dl *= 2; return false;
+      }
+      if (lo === null) {                                // 还没找到会卡的位置：向里靠
+        if (x <= aLo) { finish(aLo, true, 'radial'); return true; }
+        x = Math.max(aLo, x - dl); dl *= 2; return false;
+      }
+      if (hi - lo <= tolA) { finish(hi, true); return true; }
+      x = (lo + hi) / 2; return false;
+    }
+    return { step: step, isDone: function () { return done; }, result: function () { return res; },
+      guess: fitGuess(g1, g2), current: function () { return hi !== null ? hi : x; } };
+  }
+  function fitCenter(g1, g2) {
+    var F = createFit(g1, g2); while (!F.step()); return F.result();
+  }
+
+  return { makeGear: makeGear, pairTheory: pairTheory, interval: interval, settle: settle, freePlay: freePlay,
+    findPhase: findPhase, sweep: sweep, createSweep: createSweep, jamTol: jamTol, fitCenter: fitCenter, createFit: createFit, fitGuess: fitGuess, classify: classify,
+    wrapPer: wrapPer, inv: inv, DEG: DEG, clusterCount: clusterCount };
+});
+
+</script>
+<script>
+/*!
+ * OpRecorder —— 学生真实操作记录（离线）
+ * · 一事一记：参数在松手/确认时记一次（含前值/后值），拖动过程不逐帧记录。
+ * · localStorage 只是辅助暂存（刷新后可续记）；真正交付物是学生下载的 .json 文件。
+ * · 导出外层 {format, codec, data}：data 为 UTF-8 → LZW16 → Base64 的编码文本，仅为“不直接显示给学生阅读”，不是加密。
+ * · 没有任何网络请求；WPS_FORM_URL 为空时不显示表单链接。
+ */
+(function () {
+  'use strict';
+  // 教师将 WPS 表单建好后，可只修改这个地址（https 开头）；为空时由老师另发二维码/链接。
+  var WPS_FORM_URL = '';
+  var KEY = 'gearmesh_wps_detailed_events_v1';
+  var APP_VERSION = '2026-11-12.1';
+  var TYPES = ['session_started', 'session_resumed', 'gear_preset_applied', 'param_changed', 'center_changed',
+    'fit_center', 'install_restored', 'rephased', 'run_started', 'run_paused', 'run_observed', 'step',
+    'speed_changed', 'driver_turned_by_hand', 'follower_turned_by_hand', 'overlay_toggled', 'auto_fit_toggled', 'help_opened',
+    'observation_saved', 'answer_edited', 'export_json', 'copy_json', 'page_hidden', 'teacher_opened'];
+  var A = window.OpRecorder = { ready: false, log: function () {}, status: function () { return {}; } };
+  var storage = null, stateGetter = null;
+  try { storage = window.localStorage; var k = '__gm_storage_test'; storage.setItem(k, '1'); storage.removeItem(k); }
+  catch (e) { storage = null; }
+  function uid() { var a = ''; for (var i = 0; i < 20; i++) a += '0123456789abcdef'.charAt(Math.floor(Math.random() * 16)); return a; }
+  function deviceInfo() {
+    var coarse = false; try { coarse = window.matchMedia && matchMedia('(pointer: coarse)').matches; } catch (e) {}
+    var w = Math.min(screen.width || 0, screen.height || 0) || window.innerWidth;
+    var kind = coarse ? (w >= 700 ? 'tablet' : 'mobile') : 'desktop';
+    var ua = navigator.userAgent || '';
+    var brief = /MicroMessenger/i.test(ua) ? 'wechat' : /Edg\//.test(ua) ? 'edge' : /Chrome\//.test(ua) ? 'chrome' :
+      /Firefox\//.test(ua) ? 'firefox' : /Safari\//.test(ua) ? 'safari' : 'other';
+    var os = /Android/i.test(ua) ? 'android' : /iPhone|iPad|iPod/i.test(ua) ? 'ios' : /Windows/i.test(ua) ? 'windows' : /Mac OS/i.test(ua) ? 'macos' : /Linux/i.test(ua) ? 'linux' : 'other';
+    return { kind: kind, touch: coarse, os: os, browser: brief, screen: (screen.width || 0) + 'x' + (screen.height || 0),
+      viewport: window.innerWidth + 'x' + window.innerHeight, protocol: location.protocol.replace(':', '') };
+  }
+  function makeData() {
+    var c = {}; TYPES.forEach(function (t) { c[t] = 0; });
+    return { v: 1, session_id: 'G-' + uid(), started_at: new Date().toISOString(), device: deviceInfo(),
+      initial_state: null, student_name: '', answer: '', observations: [], runs: [],
+      counts: c, events: [], storage_warning: false };
+  }
+  var data = null;
+  try { data = storage && JSON.parse(storage.getItem(KEY)); } catch (e) {}
+  var resumed = !!(data && data.v === 1 && Array.isArray(data.events) && data.session_id);
+  if (!resumed) data = makeData();
+
+  function elem(id) { return document.getElementById(id); }
+  function setStatus(text, err) { var e = elem('assignmentStatus'); if (e) { e.textContent = text; e.className = 'submit-status' + (err ? ' error' : ''); } }
+  function recState() {
+    var e = elem('recState'); if (!e) return;
+    e.textContent = '本机已记录 ' + data.events.length + ' 条操作' + (storage && !data.storage_warning ? '' : '（未能写入本机存储，刷新会丢失，请及时导出）');
+  }
+  function save() {
+    if (!storage) { data.storage_warning = true; recState(); return; }
+    try { storage.setItem(KEY, JSON.stringify(data)); }
+    catch (e) { data.storage_warning = true; setStatus('操作记录仍在当前页面中，但本机存储空间不足；请尽快导出作业，避免刷新丢失。', true); }
+    recState();
+  }
+  function copy(o) { return o == null ? o : JSON.parse(JSON.stringify(o)); }
+  function state() { try { return stateGetter ? stateGetter() : null; } catch (e) { return null; } }
+
+  function log(type, details) {
+    if (TYPES.indexOf(type) < 0) return;
+    var now = Date.now(), started = Date.parse(data.started_at);
+    data.counts[type] = (data.counts[type] || 0) + 1;
+    var ev = { seq: data.events.length + 1, at: new Date(now).toISOString(), t_ms: Math.max(0, now - started),
+      type: type, d: copy(details || {}), s: state() };
+    data.events.push(ev);
+    if (type === 'run_observed' && details) data.runs.push({ seq: ev.seq, at: ev.at, result: copy(details), s: ev.s });
+    if (type === 'observation_saved' && details) data.observations.push({ seq: ev.seq, at: ev.at, obs: copy(details) });
+    save();
+  }
+  function setStateProvider(fn) {
+    stateGetter = fn;
+    if (!data.initial_state) { data.initial_state = state(); }
+    if (resumed) log('session_resumed', { events_before: data.events.length });
+    else log('session_started', { device: data.device });
+  }
+  function configKey(s) { return s ? JSON.stringify([s.g1, s.g2, s.a]) : ''; }
+  function countConfigs() {
+    var seen = Object.create(null), n = 0;
+    function add(s) { var k = configKey(s); if (k && !seen[k]) { seen[k] = 1; n++; } }
+    add(data.initial_state); data.events.forEach(function (e) { add(e.s); }); return n;
+  }
+  var finalExtra = null;
+  function payload() {
+    var n = elem('studentName'), name = n ? String(n.value || '').trim() : '';
+    if (!name) { setStatus('请先填写姓名。', true); if (n) n.focus(); return null; }
+    if (name.length > 24) { setStatus('姓名不能超过 24 个字。', true); return null; }
+    var ans = elem('answer'), text = ans ? String(ans.value || '').trim() : '';
+    if (text.length < 4) { setStatus('请先在“我的发现”里写下你的观察（至少一句话）。', true); if (ans) ans.focus(); return null; }
+    data.student_name = name; data.answer = text; save();
+    var now = new Date(), fx = null;
+    try { fx = finalExtra ? finalExtra() : null; } catch (e) {}
+    var help = {}; data.events.forEach(function (e) { if (e.type === 'help_opened') { var l = 'level' + (e.d && e.d.level); help[l] = (help[l] || 0) + 1; } });
+    return {
+      schema_version: '1.0', topic: '渐开线齿轮正确啮合条件', app_version: APP_VERSION,
+      session_id: data.session_id, student_name: name,
+      started_at: data.started_at, ended_at: now.toISOString(),
+      duration_seconds: Math.max(0, Math.round((now - Date.parse(data.started_at)) / 1000)),
+      device: data.device, device_at_export: deviceInfo(),
+      initial_state: data.initial_state, final_state: state(), final_model_check: fx,
+      answer: { question: '你改变了哪些条件后，发现两只齿轮能够或不能持续平稳地传动？你看到的证据是什么？', text: text },
+      saved_observations: copy(data.observations),
+      exploration: {
+        operation_counts: copy(data.counts), total_events: data.events.length,
+        distinct_configurations: countConfigs(), runs_total: data.runs.length, runs: copy(data.runs),
+        help_opened: help, all_events: copy(data.events), event_data_complete: true,
+        browser_persistence: storage && !data.storage_warning ? 'localStorage' : 'memory-only',
+        note: '一事一记：滑块/拖动在松手时记录一次前值与后值；运行结果来自页面内同一刚体接触模型的扫描；无逐帧轨迹。状态 s 中角度单位为度，长度单位为 mm。'
+      },
+      source: '本地离线页面导出；由学生自行上传 WPS 表单（页面不自动上传）'
+    };
+  }
+  /* UTF-8 → LZW16 → Base64：与四杆专题相同的编码，仅编码、不是加密。 */
+  function lzwBase64(s) {
+    var input = unescape(encodeURIComponent(s)), dict = Object.create(null), next = 256, cur = input.charAt(0), codes = [];
+    if (!cur) return '';
+    for (var i = 1; i < input.length; i++) {
+      var c = input.charAt(i), cc = cur + c;
+      if (dict[cc] !== undefined) cur = cc;
+      else { codes.push(cur.length === 1 ? cur.charCodeAt(0) : dict[cur]); if (next < 65535) dict[cc] = next++; cur = c; }
+    }
+    codes.push(cur.length === 1 ? cur.charCodeAt(0) : dict[cur]);
+    var bin = '', chunk = [];
+    for (var j = 0; j < codes.length; j++) {
+      chunk.push(String.fromCharCode(codes[j] & 255, codes[j] >>> 8));
+      if (chunk.length > 4096) { bin += chunk.join(''); chunk = []; }
+    }
+    bin += chunk.join('');
+    return btoa(bin);
+  }
+  function lzwDecode(b64) {
+    var bin = atob(b64), codes = [];
+    for (var i = 0; i + 1 < bin.length; i += 2) codes.push(bin.charCodeAt(i) | (bin.charCodeAt(i + 1) << 8));
+    if (!codes.length) return '';
+    var dict = [], next = 256; for (var k = 0; k < 256; k++) dict[k] = String.fromCharCode(k);
+    var prev = dict[codes[0]], out = [prev];
+    for (var j = 1; j < codes.length; j++) {
+      var code = codes[j], entry;
+      if (code < next && dict[code] !== undefined) entry = dict[code];
+      else if (code === next) entry = prev + prev.charAt(0);
+      else throw new Error('bad code');
+      out.push(entry);
+      if (next < 65535) dict[next++] = prev + entry.charAt(0);
+      prev = entry;
+    }
+    return decodeURIComponent(escape(out.join('')));
+  }
+  function outerJSON(inner) {
+    return JSON.stringify({ format: 'gearmesh-assignment-v1', codec: 'lzw16-utf8-base64',
+      note: '编码而非加密；教师可用页面底部“教师查看”中的解码工具还原', data: lzwBase64(JSON.stringify(inner)) }, null, 2) + '\n';
+  }
+  function decodeOuter(text) {
+    var o = JSON.parse(text);
+    if (o && o.codec === 'lzw16-utf8-base64' && typeof o.data === 'string') return JSON.parse(lzwDecode(o.data));
+    return o;
+  }
+  function cleanName(n) { return n.replace(/[\\/:*?"<>|\x00-\x1f]/g, '_').replace(/\s+/g, '').slice(0, 22) || 'student'; }
+  function filename(n) { return '齿轮啮合探索_' + cleanName(n) + '_' + data.session_id.slice(-6) + '.json'; }
+  function backup(t) { var p = elem('jsonBackupPanel'), ta = elem('jsonPreview'); if (p) p.hidden = false; if (ta) ta.value = t; }
+  function buildJSON() { var o = payload(); if (!o) return null; var t = outerJSON(o); backup(t); return { text: t, obj: o }; }
+  function download() {
+    var o = buildJSON(); if (!o) return;
+    if (typeof Blob === 'undefined' || !window.URL || !URL.createObjectURL) { setStatus('此浏览器不能直接下载文件，请使用“复制编码后的 JSON”。', true); return; }
+    try {
+      var b = new Blob([o.text], { type: 'application/json;charset=utf-8' });
+      var url = URL.createObjectURL(b), a = document.createElement('a');
+      a.href = url; a.download = filename(o.obj.student_name); a.style.display = 'none';
+      document.body.appendChild(a); a.click();
+      setTimeout(function () { URL.revokeObjectURL(url); if (a.parentNode) a.parentNode.removeChild(a); }, 4000);
+      log('export_json', { bytes: o.text.length, events: o.obj.exploration.total_events });
+      setStatus('已发起下载：' + filename(o.obj.student_name) + '。请在“下载/文件”中找到它并按要求上传。若没有出现文件，请改用“复制编码后的 JSON”。');
+    } catch (e) { setStatus('文件下载未能发起，请改用“复制编码后的 JSON”。', true); }
+  }
+  function copyJSON() {
+    var o = buildJSON(); if (!o) return;
+    var ta = elem('jsonPreview');
+    function ok() { log('copy_json', { bytes: o.text.length }); setStatus('已复制编码后的 JSON，可粘贴到老师指定的位置。'); }
+    function legacy() {
+      try { if (ta) { ta.focus(); ta.select(); } if (document.execCommand('copy')) { ok(); return; } } catch (e) {}
+      setStatus('无法自动复制，请展开下方“显示编码后的作业数据”，长按文字手动复制。', true);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(o.text).then(ok, legacy); else legacy();
+  }
+  var answerTimer = null, answerBase = null;
+  function init() {
+    var name = elem('studentName');
+    if (name) { name.value = data.student_name || ''; name.addEventListener('input', function () { data.student_name = String(this.value || '').trim(); save(); }); }
+    var ans = elem('answer');
+    if (ans) {
+      ans.value = data.answer || ''; answerBase = ans.value;
+      ans.addEventListener('input', function () {
+        data.answer = this.value; save();
+        clearTimeout(answerTimer);
+        answerTimer = setTimeout(function () {
+          if (ans.value !== answerBase) { log('answer_edited', { length_before: answerBase.length, length_after: ans.value.length, text: ans.value.slice(0, 1500) }); answerBase = ans.value; }
+        }, 2500);
+      });
+    }
+    var b = elem('exportJsonBtn'); if (b) b.addEventListener('click', download);
+    b = elem('copyJsonBtn'); if (b) b.addEventListener('click', copyJSON);
+    var link = elem('wpsFormLink'); if (link && /^https:\/\//i.test(WPS_FORM_URL)) { link.href = WPS_FORM_URL; link.hidden = false; }
+    document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'hidden') log('page_hidden', {}); });
+    recState();
+  }
+  function reset() {
+    if (storage) { try { storage.removeItem(KEY); } catch (e) {} }
+    data = makeData(); resumed = false; save();
+  }
+  A.log = log; A.setStateProvider = setStateProvider; A.preview = payload; A.encode = outerJSON; A.decode = decodeOuter;
+  A.lzwBase64 = lzwBase64; A.lzwDecode = lzwDecode; A.reset = reset; A.setFinalExtra = function (fn) { finalExtra = fn; };
+  A.data = function () { return data; }; A.resumed = function () { return resumed; };
+  A.status = function () { return { mode: 'local-detailed-export', session_id: data.session_id, total_events: data.events.length,
+    stored: storage && !data.storage_warning ? 'localStorage' : 'memory-only', network_upload: false, wps_url_configured: !!WPS_FORM_URL }; };
+  A.ready = true;
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+})();
+
+</script>
+<script>
+/*!
+ * app —— 学生端试验台。依赖 GearCore（几何与运动学）与 OpRecorder（操作记录）。
+ * 几何计算全部在 GearCore 中；本文件只做：状态、绘图、交互、提示文字与记录调用。
+ */
+(function () {
+  'use strict';
+  var GC = window.GearCore, REC = window.OpRecorder, PI = Math.PI, DEG = PI / 180;
+  function $(id) { return document.getElementById(id); }
+  function copy(o) { return JSON.parse(JSON.stringify(o)); }
+  function clamp(x, a, b) { return x < a ? a : (x > b ? b : x); }
+  function fmt(x, d) { if (x == null || !isFinite(x)) return '—'; var s = (+x).toFixed(d == null ? 2 : d); return s === '-0.00' ? '0.00' : s; }
+  function trimNum(x) { return String(+(+x).toFixed(4)); }
+
+  /* ---------------- 零件盒（不标注“对/错”） ---------------- */
+  var BIN = [
+    { id: '甲', m: 2, z: 20, alpha: 20, ha: 1, c: 0.25 },
+    { id: '乙', m: 2, z: 40, alpha: 20, ha: 1, c: 0.25 },
+    { id: '丙', m: 2.5, z: 32, alpha: 20, ha: 1, c: 0.25 },
+    { id: '丁', m: 2, z: 40, alpha: 25, ha: 1, c: 0.25 },
+    { id: '戊', m: 2, z: 30, alpha: 20, ha: 1, c: 0.25 },
+    { id: '己', m: 2, z: 12, alpha: 20, ha: 1, c: 0.25 },
+    { id: '庚', m: 2, z: 40, alpha: 20, ha: 0.8, c: 0.3 },
+    { id: '辛', m: 1.75, z: 46, alpha: 20, ha: 1, c: 0.25 }
+  ];
+  var KEYS = ['m', 'z', 'alpha', 'ha', 'c'];
+  var RANGE = { m: [1, 4, 0.25], z: [8, 80, 1], alpha: [14.5, 30, 0.5], ha: [0.5, 1.3, 0.05], c: [0, 0.5, 0.05] };
+  var LABEL = {
+    m: '模数 <em>m</em>', z: '齿数 <em>z</em>', alpha: '压力角 <em>α</em>', ha: '齿顶高系数 <em>h</em><small>a</small>*', c: '顶隙系数 <em>c</em>*'
+  };
+  var UNIT = { m: 'mm', z: '', alpha: '°', ha: '', c: '' };
+  var INIT_P = [BIN[0], BIN[1]];                      // 初始：齿轮 1 = 甲，齿轮 2 = 乙；中心距由“靠拢”自动求出
+  var CUSTOM = '自定义';
+  function pick(b) { return { m: b.m, z: b.z, alpha: b.alpha, ha: b.ha, c: b.c }; }
+  function sameP(p, b) { return KEYS.every(function (k) { return Math.abs(p[k] - b[k]) < 1e-9; }); }
+  function binOf(p) { for (var i = 0; i < BIN.length; i++) if (sameP(p, BIN[i])) return BIN[i].id; return null; }
+
+  /* ---------------- 状态 ---------------- */
+  var S = {
+    p: [pick(BIN[0]), pick(BIN[1])], g: [null, null], a: 60, th1: 0, th2: 0,
+    slot: 0, running: false, speed: 10,
+    ov: { pitch: false, base: false, tiproot: false, loa: false, contact: true, readout: false, zoom: false },
+    blocked: null, badPts: null, contact: null, dir: 1,
+    hist: [], flash: 0, flashPt: null,
+    run: null, analysis: null, analysisKey: '', sweeper: null,
+    feedbackCode: '', lastFeedbackText: '',
+    mode: [BIN[0].id, BIN[1].id],                      // 每个位置当前选的是哪只零件，或 '自定义'
+    custom: [pick(BIN[0]), pick(BIN[1])],              // 每个位置“自定义”记住的参数
+    autoFit: true, fit: null, preview: false
+  };
+  function theory() { return GC.pairTheory(S.g[0], S.g[1], S.a); }
+  function cfgKey() { return JSON.stringify([S.p[0], S.p[1], +S.a.toFixed(4)]); }
+  function stateSnap() {
+    function gp(p, i) { return { m: p.m, z: p.z, al: p.alpha, ha: p.ha, c: p.c, bin: binOf(p), src: S.mode[i] }; }
+    return { g1: gp(S.p[0], 0), g2: gp(S.p[1], 1), a: +S.a.toFixed(3), th1: +(S.th1 / DEG).toFixed(2), th2: +(S.th2 / DEG).toFixed(2),
+      blocked: S.blocked ? S.blocked.type : null };
+  }
+
+  function rebuild(i) { S.g[i] = GC.makeGear(S.p[i]); }
+  function aRange() {
+    var g1 = S.g[0], g2 = S.g[1], M = Math.max(g1.m, g2.m);
+    var lo = Math.max(g1.rb + g2.rb + 0.05, g1.r + g2.r - 3 * M);
+    var hi = g1.ra + g2.ra + 2 * M;
+    return [Math.floor(lo * 10) / 10, Math.ceil(hi * 10) / 10];
+  }
+
+  /* ---------------- 运动学：装配与从动轮更新 ---------------- */
+  function markBlocked(type) {
+    S.blocked = type ? { type: type } : null;
+    if (type) {
+      var iv = GC.interval(S.g[0], S.g[1], S.a, S.th1, S.th2, true);
+      S.badPts = iv.bad || [];
+    } else S.badPts = null;
+  }
+  // 安装变化后：从动轮可自由转动以“让开”；若怎样都装不进，则保留重叠并标红
+  function settleAfterChange(quick) {
+    var g1 = S.g[0], g2 = S.g[1];
+    S.jam = null;
+    var st = GC.settle(g1, g2, S.a, S.th1, S.th2);
+    if (st.radial) { markBlocked('radial'); return; }
+    if (!st.jam) { S.th2 = st.th2; markBlocked(null); return; }
+    if (quick) { markBlocked('jam'); S.needFullSettle = true; return; }
+    var ph = GC.findPhase(g1, g2, S.a, S.th1, S.th2, 'near');
+    if (ph.radial) { markBlocked('radial'); return; }
+    S.th2 = ph.th2;
+    markBlocked(ph.ok ? null : 'jam');
+  }
+  function rephase() {
+    var g1 = S.g[0], g2 = S.g[1];
+    S.th1 = 0; S.jam = null;
+    var ph = GC.findPhase(g1, g2, S.a, 0, PI + PI / g2.z, 'max');
+    S.th2 = ph.th2;
+    markBlocked(ph.radial ? 'radial' : (ph.ok ? null : 'jam'));
+    S.hist = [];
+  }
+  // 主动轮转过 d（rad）。返回实际转过的角度。
+  function driveBy(d, live) {
+    var g1 = S.g[0], g2 = S.g[1], per = g1.pitchAng, maxSub = per / 40;
+    S.jam = null;
+    if (S.blocked) return 0;
+    var n = Math.min(14, Math.max(1, Math.ceil(Math.abs(d) / maxSub))), sub = d / n, done = 0;
+    for (var i = 0; i < n; i++) {
+      var st = GC.settle(g1, g2, S.a, S.th1 + sub, S.th2);
+      if (st.jam) {
+        // 卡住：主动轮停在最后一个可行位置；红点标出“再转一点就会相互穿入”的位置
+        var iv = GC.interval(g1, g2, S.a, S.th1 + sub, S.th2, true);
+        S.jam = { type: st.radial ? 'radial' : 'jam', bad: iv.bad || [] };
+        break;
+      }
+      var moved = S.th2 - st.th2;
+      if (live && Math.abs(sub) > 1e-12) {
+        var i0 = g1.z / g2.z, r = (moved / sub) / i0;
+        if (moved > 1e-12 && (r > 1.3 || r < 0.7)) { S.flash = 1; S.flashT = performance.now(); }
+      }
+      S.th1 += sub; S.th2 = st.th2; done += sub;
+      S.hist.push([S.th1, S.th2]);
+    }
+    var keep = per * 1.0;
+    while (S.hist.length > 2 && S.hist[S.hist.length - 1][0] - S.hist[0][0] > keep * 1.05) S.hist.shift();
+    S.dir = d >= 0 ? 1 : -1;
+    return done;
+  }
+  function turnFollowerBy(d) {
+    var g1 = S.g[0], g2 = S.g[1];
+    if (S.blocked) return 0;
+    var target = S.th2 + d, th = S.th2, fp;
+    for (var it = 0; it < 4; it++) {
+      var iv = GC.interval(g1, g2, S.a, S.th1, th);
+      if (iv.radial || !iv.any) { if (!iv.any) th = target; break; }
+      th = iv.lo <= iv.hi ? clamp(target, iv.lo, iv.hi) : th;
+    }
+    var moved = th - S.th2; S.th2 = th; return moved;
+  }
+  function currentRatio() {
+    var h = S.hist; if (h.length < 4) return NaN;
+    var a = h[0], b = h[h.length - 1], d1 = b[0] - a[0], d2 = a[1] - b[1];
+    if (Math.abs(d1) < S.g[0].pitchAng * 0.5 || Math.abs(d2) < 1e-9) return NaN;
+    return d1 / d2;
+  }
+
+  /* ---------------- 自动靠拢（分帧执行，不冻结页面） ---------------- */
+  // 每帧只做一次 GearCore.createFit 的 step()（一次“能否转过 1.5 齿距”的检验），完成后装到求得的中心距并重新对齿。
+  function fitBtnState() {
+    var b = $('fitBtn'); if (!b) return;
+    b.disabled = !!S.fit; b.textContent = S.fit ? '正在靠拢…' : '靠拢到刚好接触';
+    ['stepFwd', 'stepBack', 'rephaseBtn'].forEach(function (id) { $(id).disabled = !!S.fit; });
+    if (!S.running) $('runBtn').textContent = S.fit && S.runQueued ? '靠拢后运行…' : '试运行';
+  }
+  // 优先放到后台线程（Web Worker，由本页内联的 GearCore 源码生成，不联网）计算，主线程完全不卡；
+  // 浏览器不支持、出错或 20 秒无响应时，自动退回主线程分帧计算。
+  var FW = { w: null, busy: false, seq: 0, ok: typeof Worker !== 'undefined' && typeof Blob !== 'undefined' && !!(window.URL && URL.createObjectURL) };
+  function fitWorker() {
+    if (!FW.ok) return null;
+    if (FW.w) return FW.w;
+    try {
+      // 后台线程常驻（保持 JIT 预热）：每 30 ms 让出一次，新任务到来时直接替换正在算的旧任务
+      var src = $('gearcore-src').textContent + '\n;(function(){var cur=null;' +
+        'function pump(){if(!cur)return;var c=cur,t0=Date.now();try{while(!c.F.step()){if(Date.now()-t0>30){setTimeout(pump,0);return;}}' +
+        'if(c===cur){cur=null;self.postMessage({id:c.id,r:c.F.result()});}else setTimeout(pump,0);}' +
+        'catch(err){cur=null;self.postMessage({id:c.id,err:String(err&&err.message||err)});}}' +
+        'self.onmessage=function(e){var d=e.data,idle=!cur;try{cur={id:d.id,F:GearCore.createFit(GearCore.makeGear(d.p1),GearCore.makeGear(d.p2))};}' +
+        'catch(err){cur=null;self.postMessage({id:d.id,err:String(err&&err.message||err)});return;}if(idle)setTimeout(pump,0);};})();';
+      var url = URL.createObjectURL(new Blob([src], { type: 'application/javascript' }));
+      var w = new Worker(url);
+      w.onmessage = function (e) { FW.busy = false; onFitMsg(e.data || {}); };
+      w.onerror = function (ev) { if (ev && ev.preventDefault) ev.preventDefault(); workerFailed(); };
+      FW.w = w; return w;
+    } catch (e) { FW.ok = false; return null; }
+  }
+  function workerFailed() {
+    FW.ok = false; FW.busy = false;
+    if (FW.w) { try { FW.w.terminate(); } catch (e) {} FW.w = null; }
+    if (S.fit && S.fit.viaWorker) S.fit.viaWorker = false;      // 改由主线程分帧继续算
+  }
+  function onFitMsg(d) {
+    if (!S.fit || !S.fit.viaWorker || d.id !== S.fit.id) return;   // 已取消或已被新的靠拢取代
+    if (d.err || !d.r) { workerFailed(); return; }
+    completeFit(d.r);
+  }
+  function requestFit(reason, extra) {
+    if (S.running) stopRun('fit');
+    var g1 = S.g[0], g2 = S.g[1], F = GC.createFit(g1, g2), rr = aRange();
+    S.fit = { F: F, reason: reason, before: +S.a.toFixed(3), extra: extra || null, viaWorker: false, id: 0, t0: performance.now() };
+    var w = fitWorker();
+    if (w) {
+      try { S.fit.id = ++FW.seq; w.postMessage({ id: S.fit.id, p1: copy(S.p[0]), p2: copy(S.p[1]) }); S.fit.viaWorker = true; FW.busy = true; }
+      catch (e) { workerFailed(); }
+    }
+    S.preview = false;
+    // 先放到估计位置（基节相等时就是理论上无侧隙的位置），再在后台核实、细调。
+    // 这里只做一次快速贴合（不做全周相位搜索），算完后再正式对齿，减轻低端手机主线程负担。
+    S.a = clamp(F.guess, rr[0], rr[1]); refreshARange();
+    S.th1 = 0; settleAfterChange(true); S.hist = []; S.th2ref = S.th2;
+    fitBtnState(); restingFeedback(); dirty = true;
+  }
+  function pumpFit() {
+    if (!S.fit) return;
+    if (S.fit.viaWorker) { if (performance.now() - S.fit.t0 > 20000) workerFailed(); return; }
+    var t0 = performance.now();
+    do { if (S.fit.F.step()) { completeFit(); return; } } while (performance.now() - t0 < 8);
+  }
+  function completeFit(res) {
+    var f = S.fit; if (!f) return;
+    var r = res || f.F.result(); S.fit = null;
+    var go = S.runQueued; S.runQueued = false;
+    var rr = aRange(); S.a = clamp(r.a, rr[0], rr[1]); refreshARange();
+    S.needFullSettle = false; rephase(); S.th2ref = S.th2;
+    fitBtnState(); restingFeedback(); refreshWhy(); dirty = true;
+    var d = { method: f.reason, before: f.before, after: +S.a.toFixed(3), limited_by: r.ok ? (r.limitedBy || 'flank_contact') : 'cannot_turn', ok: r.ok };
+    if (f.extra) d.trigger = f.extra;
+    REC.log('fit_center', d);
+    if (go) startRun();
+  }
+  function finishFitNow() {
+    if (!S.fit) return;
+    if (S.fit.viaWorker) { completeFit(GC.fitCenter(S.g[0], S.g[1])); return; }   // 需要立即得到结果时（导出、记下试验）同步算
+    while (!S.fit.F.step()); completeFit();
+  }
+  function cancelFit() { if (!S.fit) return; S.fit = null; S.runQueued = false; fitBtnState(); settleAfterChange(); restingFeedback(); dirty = true; }
+  // 拖参数滑块的过程中：只按估计值摆放，不做检验；松手后再正式靠拢
+  function previewFit() {
+    if (S.fit) S.fit = null;
+    var rr = aRange(); S.preview = true;
+    S.a = clamp(GC.fitGuess(S.g[0], S.g[1]), rr[0], rr[1]); refreshARange();
+    settleAfterChange(true); S.hist = [];
+    fitBtnState(); restingFeedback();
+  }
+
+  /* ---------------- 画布 ---------------- */
+  var canvas = $('view'), ctx = canvas.getContext('2d'), V = { s: 1, ox: 0, oy: 0, W: 0, H: 0, dpr: 1, frozen: false };
+  var paths = [null, null];
+  function buildPath(g) {
+    var P = new Path2D(), z = g.z, per = g.pitchAng, R = g.side.r, Hh = g.side.h, n = R.length;
+    var hTip = Hh[n - 1], h0 = Hh[0];
+    for (var k = 0; k < z; k++) {
+      var c = k * per;
+      for (var i = 0; i < n; i++) {
+        var a = c - Hh[i], x = R[i] * Math.cos(a), y = R[i] * Math.sin(a);
+        if (k === 0 && i === 0) P.moveTo(x, y); else P.lineTo(x, y);
+      }
+      if (hTip > 1e-9) P.arc(0, 0, g.ra, c - hTip, c + hTip, false);
+      for (var j = n - 1; j >= 0; j--) { var b = c + Hh[j]; P.lineTo(R[j] * Math.cos(b), R[j] * Math.sin(b)); }
+      var nextStart = c + per - h0, thisEnd = c + h0;
+      if (nextStart > thisEnd + 1e-9) P.arc(0, 0, g.rf, thisEnd, nextStart, false);
+    }
+    P.closePath();
+    return P;
+  }
+  function resize() {
+    var r = canvas.getBoundingClientRect(), dpr = Math.min(window.devicePixelRatio || 1, 2.5);
+    var W = Math.max(1, Math.round(r.width)), H = Math.max(1, Math.round(r.height));
+    if (W < 10 || H < 10) { requestAnimationFrame(resize); return; }
+    V.W = W; V.H = H; V.dpr = dpr;
+    canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
+    if (!V.frozen) fitView();
+    dirty = true;
+  }
+  function fitView() {
+    var g1 = S.g[0], g2 = S.g[1], W = V.W, H = V.H;
+    if (S.ov.zoom) {
+      var T = theory(), cx = (T.cosAw < 1) ? S.a * g1.rb / (g1.rb + g2.rb) : S.a * g1.r / (g1.r + g2.r);
+      var M = Math.max(g1.m, g2.m), span = 11 * M;
+      V.s = Math.min(W / span, H / (span * 0.72));
+      V.ox = W / 2 - V.s * cx; V.oy = H / 2;
+      return;
+    }
+    var x0 = -g1.ra, x1 = S.a + g2.ra, yh = Math.max(g1.ra, g2.ra);
+    var bw = (x1 - x0) * 1.06, bh = 2 * yh * 1.06;
+    V.s = Math.min(W / bw, H / bh);
+    V.ox = W / 2 - V.s * (x0 + x1) / 2; V.oy = H / 2;
+  }
+  function setT(rot, cx, cy) {
+    var s = V.s * V.dpr, c = Math.cos(rot), n = Math.sin(rot);
+    ctx.setTransform(s * c, -s * n, -s * n, -s * c, (V.ox + V.s * cx) * V.dpr, (V.oy - V.s * cy) * V.dpr);
+  }
+  function px(n) { return n / V.s; }
+  function toWorld(cx, cy) { return [(cx - V.ox) / V.s, -(cy - V.oy) / V.s]; }
+  function toScreen(x, y) { return [V.ox + V.s * x, V.oy - V.s * y]; }
+
+  function circle(cx, cy, r, color, dash, w) {
+    setT(0, cx, cy);
+    ctx.beginPath(); ctx.arc(0, 0, r, 0, 2 * PI);
+    ctx.setLineDash(dash ? dash.map(px) : []);
+    ctx.strokeStyle = color; ctx.lineWidth = px(w || 1.2); ctx.stroke(); ctx.setLineDash([]);
+  }
+  function drawGear(i, rot, cx) {
+    var g = S.g[i], P = paths[i], overlap = !!S.blocked && !S.fit && !S.preview;
+    setT(rot, cx, 0);
+    ctx.fillStyle = i === 0 ? (overlap ? 'rgba(47,95,174,0.28)' : '#e2eaf6') : (overlap ? 'rgba(168,107,12,0.28)' : '#f6ead5');
+    ctx.fill(P);
+    ctx.strokeStyle = i === 0 ? '#2f5fae' : '#a86b0c'; ctx.lineWidth = px(1.3); ctx.lineJoin = 'round'; ctx.stroke(P);
+    // 轮毂、轴孔与转动标记（第 0 号齿上一个小圆点）
+    var hub = Math.max(g.rf * 0.22, Math.min(g.rf * 0.3, 7));
+    ctx.beginPath(); ctx.arc(0, 0, hub, 0, 2 * PI); ctx.fillStyle = '#fff'; ctx.fill(); ctx.lineWidth = px(1); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(hub, 0); ctx.lineTo(g.rf * 0.86, 0);
+    ctx.strokeStyle = i === 0 ? 'rgba(47,95,174,0.55)' : 'rgba(168,107,12,0.6)'; ctx.lineWidth = px(1.6); ctx.stroke();
+    ctx.beginPath(); ctx.arc(g.r - 0.35 * g.m, 0, Math.max(px(2.6), 0.16 * g.m), 0, 2 * PI);
+    ctx.fillStyle = i === 0 ? '#2f5fae' : '#a86b0c'; ctx.fill();
+  }
+  function drawAxis(cx, isHandle) {
+    var p = toScreen(cx, 0);
+    ctx.setTransform(V.dpr, 0, 0, V.dpr, 0, 0);
+    ctx.strokeStyle = '#1e2933'; ctx.lineWidth = 1.4;
+    ctx.beginPath(); ctx.moveTo(p[0] - 7, p[1]); ctx.lineTo(p[0] + 7, p[1]); ctx.moveTo(p[0], p[1] - 7); ctx.lineTo(p[0], p[1] + 7); ctx.stroke();
+    if (isHandle) {
+      ctx.beginPath(); ctx.arc(p[0], p[1], 11, 0, 2 * PI); ctx.fillStyle = drag && drag.mode === 'center' ? 'rgba(168,107,12,0.35)' : 'rgba(255,255,255,0.85)';
+      ctx.fill(); ctx.strokeStyle = '#a86b0c'; ctx.lineWidth = 2; ctx.stroke();
+      ctx.fillStyle = '#a86b0c';
+      ctx.beginPath(); ctx.moveTo(p[0] - 19, p[1]); ctx.lineTo(p[0] - 14, p[1] - 4); ctx.lineTo(p[0] - 14, p[1] + 4); ctx.closePath(); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(p[0] + 19, p[1]); ctx.lineTo(p[0] + 14, p[1] - 4); ctx.lineTo(p[0] + 14, p[1] + 4); ctx.closePath(); ctx.fill();
+    }
+  }
+  function drawLOA() {
+    var g1 = S.g[0], g2 = S.g[1], a = S.a, sb = g1.rb + g2.rb;
+    if (sb >= a) return;
+    var aw = Math.acos(sb / a), sg = S.dir >= 0 ? 1 : -1;
+    // 主动轮逆时针：作用线 N1(下) → N2(上)；反转时镜像
+    var N1 = [g1.rb * Math.cos(aw), -sg * g1.rb * Math.sin(aw)], N2 = [a - g2.rb * Math.cos(aw), sg * g2.rb * Math.sin(aw)];
+    setT(0, 0, 0);
+    ctx.strokeStyle = 'rgba(194,65,12,0.55)'; ctx.lineWidth = px(1.2); ctx.setLineDash([px(6), px(4)]);
+    ctx.beginPath(); ctx.moveTo(N1[0], N1[1]); ctx.lineTo(N2[0], N2[1]); ctx.stroke(); ctx.setLineDash([]);
+    // 实际可能接触的一段：两齿顶圆与作用线的交点之间
+    var ux = (N2[0] - N1[0]), uy = (N2[1] - N1[1]), L = Math.sqrt(ux * ux + uy * uy); ux /= L; uy /= L;
+    var A = Math.sqrt(Math.max(0, g1.ra * g1.ra - g1.rb * g1.rb)), B = Math.sqrt(Math.max(0, g2.ra * g2.ra - g2.rb * g2.rb));
+    var s0 = Math.max(0, L - B), s1 = Math.min(L, A);
+    if (s1 > s0) {
+      ctx.strokeStyle = 'rgba(194,65,12,0.9)'; ctx.lineWidth = px(3);
+      ctx.beginPath(); ctx.moveTo(N1[0] + ux * s0, N1[1] + uy * s0); ctx.lineTo(N1[0] + ux * s1, N1[1] + uy * s1); ctx.stroke();
+    }
+    ctx.fillStyle = 'rgba(194,65,12,0.9)';
+    [N1, N2].forEach(function (p) { ctx.beginPath(); ctx.arc(p[0], p[1], px(2.5), 0, 2 * PI); ctx.fill(); });
+    label(N1, 'N₁', 'rgba(194,65,12,0.95)', 6, sg > 0 ? 14 : -8);
+    label(N2, 'N₂', 'rgba(194,65,12,0.95)', -16, sg > 0 ? -8 : 14);
+  }
+  function label(p, t, color, dx, dy) {
+    var s = toScreen(p[0], p[1]); ctx.setTransform(V.dpr, 0, 0, V.dpr, 0, 0);
+    ctx.font = '12px system-ui, sans-serif'; ctx.fillStyle = color; ctx.fillText(t, s[0] + (dx || 0), s[1] + (dy || 0));
+  }
+  function drawContacts() {
+    var c = S.contact; if (!c) return;
+    ctx.setTransform(V.dpr, 0, 0, V.dpr, 0, 0);
+    var pts = c.pts;
+    for (var i = 0; i < pts.length; i++) {
+      var s = toScreen(pts[i][0], pts[i][1]);
+      ctx.beginPath(); ctx.arc(s[0], s[1], 4.2, 0, 2 * PI); ctx.fillStyle = '#d64541'; ctx.fill();
+      ctx.lineWidth = 1.5; ctx.strokeStyle = '#fff'; ctx.stroke();
+    }
+    if (S.flash > 0 && pts.length) {
+      var f = S.flash, s0 = toScreen(pts[0][0], pts[0][1]);
+      ctx.beginPath(); ctx.arc(s0[0], s0[1], 8 + 14 * (1 - f), 0, 2 * PI); ctx.strokeStyle = 'rgba(214,69,65,' + (0.8 * f) + ')'; ctx.lineWidth = 2; ctx.stroke();
+    }
+  }
+  function drawBad() {
+    var pts = S.blocked ? S.badPts : (S.jam ? S.jam.bad : null);
+    if (!pts || S.fit || S.preview) return;
+    ctx.setTransform(V.dpr, 0, 0, V.dpr, 0, 0);
+    ctx.fillStyle = 'rgba(214,69,65,0.9)';
+    var n = pts.length, step = Math.max(1, Math.floor(n / 160));
+    for (var i = 0; i < n; i += step) { var s = toScreen(pts[i][0], pts[i][1]); ctx.fillRect(s[0] - 1.6, s[1] - 1.6, 3.2, 3.2); }
+  }
+  function drawReadout() {
+    ctx.setTransform(V.dpr, 0, 0, V.dpr, 0, 0);
+    var r = currentRatio(), n = S.blocked ? '—（轮齿重叠）' : (S.contact ? S.contact.pairs + (S.contact.back ? '（另一侧也贴着）' : '') : 0);
+    var lines = ['主动轮转过 θ₁ = ' + fmt(S.th1 / DEG, 1) + '°',
+      '从动轮转过 θ₂ = ' + fmt(-(S.th2 - S.th2ref) / DEG, 1) + '°（反向）',
+      '最近一个齿距内 ω₁ / ω₂ ≈ ' + (isFinite(r) ? fmt(r, 3) : '—（转一会儿再看）'),
+      '此刻相互接触的齿对：' + n];
+    ctx.font = '13px system-ui, "PingFang SC", "Microsoft YaHei", sans-serif';
+    var w = 0; lines.forEach(function (t) { w = Math.max(w, ctx.measureText(t).width); });
+    ctx.fillStyle = 'rgba(255,255,255,0.88)'; ctx.fillRect(8, 8, w + 16, lines.length * 19 + 10);
+    ctx.fillStyle = '#1e2933';
+    lines.forEach(function (t, i) { ctx.fillText(t, 16, 26 + i * 19); });
+  }
+  function drawScale() {
+    ctx.setTransform(V.dpr, 0, 0, V.dpr, 0, 0);
+    var mm = [1, 2, 5, 10, 20, 50], len = 10;
+    for (var i = 0; i < mm.length; i++) if (mm[i] * V.s >= 40) { len = mm[i]; break; }
+    var x = V.W - 14 - len * V.s, y = V.H - 14;
+    ctx.strokeStyle = '#5b6875'; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(x, y - 4); ctx.lineTo(x, y); ctx.lineTo(x + len * V.s, y); ctx.lineTo(x + len * V.s, y - 4); ctx.stroke();
+    ctx.font = '12px system-ui, sans-serif'; ctx.fillStyle = '#5b6875'; ctx.textAlign = 'center';
+    ctx.fillText(len + ' mm', x + len * V.s / 2, y - 6); ctx.textAlign = 'start';
+  }
+  function updateContact() {
+    if (S.blocked || !S.ov.contact && !S.ov.readout) { S.contact = null; return; }
+    var g1 = S.g[0], g2 = S.g[1];
+    var iv = GC.interval(g1, g2, S.a, S.th1, S.th2, true, 2e-6);
+    var tol = 4e-6 * g1.m / g2.r, hiP = [], loP = [];
+    if (iv.any && Math.abs(iv.hi - S.th2) < tol) hiP = iv.hiPts;
+    if (iv.any && Math.abs(S.th2 - iv.lo) < tol) loP = iv.loPts;
+    var md = 0.4 * Math.min(g1.pb, g2.pb), ch = GC.clusterCount(hiP, md), cl = GC.clusterCount(loP, md);
+    // 传力一侧：正转时为 hi 侧（从动轮被推向顺时针），反转时为 lo 侧
+    var drive = S.dir >= 0 ? ch : cl, other = S.dir >= 0 ? cl : ch;
+    S.contact = { pts: ch.concat(cl), pairs: drive.length || other.length, back: drive.length > 0 && other.length > 0 };
+  }
+  function draw() {
+    if (!V.W) return;
+    if (!V.frozen) fitView();
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    var g1 = S.g[0], g2 = S.g[1];
+    drawGear(0, S.th1, 0);
+    drawGear(1, S.th2, S.a);
+    if (S.ov.tiproot) {
+      circle(0, 0, g1.ra, '#6b7782', [2, 3], 1); circle(0, 0, g1.rf, '#6b7782', [2, 3], 1);
+      circle(S.a, 0, g2.ra, '#6b7782', [2, 3], 1); circle(S.a, 0, g2.rf, '#6b7782', [2, 3], 1);
+    }
+    if (S.ov.base) { circle(0, 0, g1.rb, '#7b5bb5', [6, 4], 1.3); circle(S.a, 0, g2.rb, '#7b5bb5', [6, 4], 1.3); }
+    if (S.ov.pitch) { circle(0, 0, g1.r, '#3b7a57', [10, 3, 2, 3], 1.3); circle(S.a, 0, g2.r, '#3b7a57', [10, 3, 2, 3], 1.3); }
+    if (S.ov.loa) drawLOA();
+    drawAxis(0, false); drawAxis(S.a, true);
+    if (S.ov.contact) drawContacts();
+    drawBad();
+    if (S.ov.readout) drawReadout();
+    drawScale();
+  }
+
+  /* ---------------- 提示文字（只描述看得见的现象） ---------------- */
+  var FEED = {
+    smooth: ['calm', '运转平稳。'],
+    irregular: ['warn', '从动轮转得时快时慢，换齿时有顿挫。'],
+    gap: ['warn', '从动轮会停一下再被推动：前后两对齿没接上。'],
+    no_contact: ['info', '主动轮在空转，没有带动从动轮。'],
+    jam: ['warn', '转不动了：轮齿被卡住。'],
+    radial: ['warn', '装不进去：一只齿轮的齿顶伸进了另一只的齿根圆以内。'],
+    radial_clash: ['warn', '装不进去：一只齿轮的齿顶伸进了另一只的齿根圆以内。'],
+    overlap: ['warn', '两轮轮齿有重叠（红点处），实物不能这样装配。'],
+    apart: ['info', '两轮离得太远，轮齿碰不到。'],
+    fitting: ['info', '正在把齿轮 2 靠拢到刚好接触……']
+  };
+  function setFeedback(code) {
+    var e = $('feedback'), f = FEED[code];
+    S.feedbackCode = code || '';
+    if (!f) { e.textContent = ''; e.className = 'feedback'; S.lastFeedbackText = ''; return; }
+    e.className = 'feedback ' + f[0]; e.textContent = f[1]; S.lastFeedbackText = f[1];
+  }
+  function restingFeedback() {
+    var g1 = S.g[0], g2 = S.g[1];
+    if (S.fit || S.preview) setFeedback('fitting');
+    else if (S.blocked) setFeedback(S.blocked.type === 'radial' ? 'radial' : 'overlap');
+    else if (S.a >= g1.ra + g2.ra) setFeedback('apart');
+    else setFeedback('');
+  }
+
+  /* ---------------- 运行与后台扫描 ---------------- */
+  function startAnalysis() {
+    var key = cfgKey();
+    if (S.analysis && S.analysisKey === key) return;
+    S.analysis = null; S.analysisKey = key;
+    S.sweeper = GC.createSweep(S.g[0], S.g[1], S.a, S.th1, S.th2, { stepsPerPitch: 48, warm: 1, pitches: 2 });
+    S.sweeperKey = key;
+  }
+  function pumpAnalysis() {
+    if (!S.sweeper) return;
+    if (S.sweeperKey !== cfgKey()) { S.sweeper = null; return; }
+    var t0 = performance.now();
+    while (!S.sweeper.isDone() && performance.now() - t0 < 6) S.sweeper.step(2);
+    if (S.sweeper.isDone()) { S.analysis = S.sweeper.result(); S.sweeper = null; }
+  }
+  function summary(M) {
+    if (!M) return null;
+    var T = theory();
+    return { cls: M.cls, mean_ratio_w1_w2: M.meanRatio ? +(1 / M.meanRatio).toFixed(4) : null,
+      max_ratio_dev: +M.maxDev.toFixed(4), pause_frac: +M.pauseFrac.toFixed(3), mean_pairs_in_contact: +M.meanPairs.toFixed(3),
+      min_backlash_mm_on_r2: isFinite(M.minBacklash) ? +M.minBacklash.toFixed(4) : null, jam_at_deg: M.jamAt != null ? +M.jamAt.toFixed(2) : null,
+      theory: { pb1: +T.pb1.toFixed(4), pb2: +T.pb2.toFixed(4), pb_match: T.pbMatch, m_match: T.mMatch, alpha_match: T.alphaMatch,
+        r1_plus_r2: +T.a0.toFixed(3), work_alpha_deg: isFinite(T.aw) ? +(T.aw / DEG).toFixed(3) : null,
+        eps_formula: isFinite(T.epsFormula) ? +T.epsFormula.toFixed(4) : null, eps_formula_valid: T.epsValid,
+        clear12: +T.clear12.toFixed(3), clear21: +T.clear21.toFixed(3),
+        undercut1: S.g[0].undercut, undercut2: S.g[1].undercut } };
+  }
+  function startRun() {
+    if (S.running) return;
+    if (S.fit) { S.runQueued = true; fitBtnState(); return; }   // 靠拢还没算完：算完后自动开始运行，不阻塞页面
+    S.running = true; $('runBtn').textContent = '暂停';
+    S.run = { th1Start: S.th1, reported: false, liveJam: null, t0: performance.now() };
+    S.liveJam = null;
+    REC.log('run_started', { speed_deg_s: S.speed });
+    if (S.blocked) {
+      S.running = false; $('runBtn').textContent = '试运行';
+      restingFeedback(); flashStage();
+      REC.log('run_observed', { cls: S.blocked.type === 'radial' ? 'radial_clash' : 'jam', when: 'at_start', shown: S.lastFeedbackText });
+      return;
+    }
+    setFeedback('');
+    startAnalysis();
+  }
+  function stopRun(reason) {
+    if (!S.running) return;
+    S.running = false; $('runBtn').textContent = '试运行';
+    var turned = S.run ? (S.th1 - S.run.th1Start) / DEG : 0;
+    REC.log('run_paused', { reason: reason || 'user', driver_turned_deg: +turned.toFixed(1) });
+    S.run = null;
+  }
+  function flashStage() { var st = $('stage'); st.style.transition = 'box-shadow .15s'; st.style.boxShadow = '0 0 0 3px rgba(214,69,65,.5)'; setTimeout(function () { st.style.boxShadow = ''; }, 320); }
+  function runTick(dt) {
+    var d = S.speed * DEG * dt;
+    driveBy(d, true);
+    pumpAnalysis();
+    var R = S.run; if (!R) return;
+    if (S.jam) {
+      setFeedback(S.jam.type === 'radial' ? 'radial' : 'jam');
+      if (!R.reported) { R.reported = true; REC.log('run_observed', { cls: S.jam.type === 'radial' ? 'radial_clash' : 'jam', when: 'live', driver_turned_deg: +((S.th1 - R.th1Start) / DEG).toFixed(2), shown: S.lastFeedbackText, model: summary(S.analysis) }); }
+      stopRun('jammed');
+      return;
+    }
+    var turned = S.th1 - R.th1Start, per = S.g[0].pitchAng;
+    if (!R.reported && S.analysis && turned > 1.2 * per) {
+      R.reported = true;
+      var cls = S.analysis.cls; if (cls === 'radial_clash') cls = 'radial';
+      setFeedback(cls);
+      REC.log('run_observed', { cls: S.analysis.cls, when: 'after_1.2_pitch', shown: S.lastFeedbackText, measured_ratio_last_pitch: isFinite(currentRatio()) ? +currentRatio().toFixed(4) : null, model: summary(S.analysis) });
+    }
+  }
+
+  /* ---------------- 主循环 ---------------- */
+  var dirty = true, last = 0;
+  function loop(t) {
+    var dt = last ? Math.min(0.1, (t - last) / 1000) : 0; last = t;   // 上限 0.1 s：低帧率手机上仍按设定转速转动
+    if (S.fit) { pumpFit(); dirty = true; }
+    else if (S.running) { runTick(dt); dirty = true; }
+    else if (S.sweeper) pumpAnalysis();
+    else if (!drag && !V.frozen && !S.preview && !S.blocked && S.analysisKey !== cfgKey()) startAnalysis();   // 空闲时提前算好，按“试运行”后提示更快出现
+    if (S.flash > 0) { S.flash = Math.max(0, 1 - (performance.now() - S.flashT) / 450); dirty = true; }
+    if (dirty) { updateContact(); draw(); dirty = false; }
+    requestAnimationFrame(loop);
+  }
+
+  /* ---------------- 参数面板 ---------------- */
+  function partSmall(p) {
+    return '<small>m' + trimNum(p.m) + ' z' + p.z + ' ' + trimNum(p.alpha) + '°</small>' +
+      '<small>' + 'h<sub>a</sub>*' + trimNum(p.ha) + ' c*' + trimNum(p.c) + '</small>';
+  }
+  function buildBin() {
+    var box = $('bin'); box.innerHTML = '';
+    var cu = document.createElement('button'); cu.type = 'button'; cu.className = 'part custom'; cu.dataset.id = CUSTOM;
+    cu.addEventListener('click', applyCustom); box.appendChild(cu);
+    BIN.forEach(function (b) {
+      var el = document.createElement('button'); el.type = 'button'; el.className = 'part'; el.dataset.id = b.id;
+      el.innerHTML = '<b>' + b.id + '</b><small>m' + trimNum(b.m) + ' z' + b.z + ' ' + trimNum(b.alpha) + '°</small>' +
+        '<small>' + 'h<sub>a</sub>*' + trimNum(b.ha) + ' c*' + trimNum(b.c) + '</small>';
+      el.addEventListener('click', function () { applyPreset(b); });
+      box.appendChild(el);
+    });
+  }
+  function refreshBin() {
+    var cur = S.mode[S.slot], cu = document.querySelector('.part.custom');
+    if (cu) cu.innerHTML = '<b>' + CUSTOM + '</b>' + partSmall(S.custom[S.slot]);
+    Array.prototype.forEach.call(document.querySelectorAll('.part'), function (el) {
+      el.classList.toggle('on', el.dataset.id === cur);
+      el.style.setProperty('--slot', S.slot === 0 ? 'var(--g1)' : 'var(--g2)');
+    });
+  }
+  function buildParams() {
+    var box = $('params'); box.innerHTML = '';
+    KEYS.forEach(function (k) {
+      var r = RANGE[k], row = document.createElement('div'); row.className = 'prm';
+      row.innerHTML = '<label for="pr_' + k + '">' + LABEL[k] + '</label>' +
+        '<input type="range" id="pr_' + k + '" min="' + r[0] + '" max="' + r[1] + '" step="' + r[2] + '">' +
+        '<input type="number" id="pn_' + k + '" min="' + r[0] + '" max="' + r[1] + '" step="' + r[2] + '" aria-label="' + LABEL[k].replace(/<[^>]+>/g, '') + (UNIT[k] ? '（' + UNIT[k] + '）' : '') + '">';
+      box.appendChild(row);
+      var rg = row.querySelector('input[type=range]'), nm = row.querySelector('input[type=number]');
+      var before = null;
+      function begin() { if (before === null) before = S.p[S.slot][k]; }
+      rg.addEventListener('pointerdown', begin); rg.addEventListener('touchstart', begin, { passive: true }); rg.addEventListener('keydown', begin);
+      rg.addEventListener('input', function () { begin(); setParam(k, +rg.value, true); nm.value = trimNum(rg.value); });
+      rg.addEventListener('change', function () { var b = before === null ? S.p[S.slot][k] : before; before = null; commitParam(k, b, +rg.value); });
+      nm.addEventListener('change', function () {
+        var v = +nm.value; if (!isFinite(v)) v = S.p[S.slot][k];
+        v = clamp(Math.round((v - r[0]) / r[2]) * r[2] + r[0], r[0], r[1]); v = +v.toFixed(4);
+        var b = S.p[S.slot][k]; nm.value = trimNum(v); rg.value = v; setParam(k, v, false); commitParam(k, b, v);
+      });
+    });
+  }
+  function refreshParams() {
+    var p = S.p[S.slot], col = S.slot === 0 ? 'var(--g1)' : 'var(--g2)';
+    KEYS.forEach(function (k) { var rg = $('pr_' + k), nm = $('pn_' + k); rg.value = p[k]; nm.value = trimNum(p[k]); rg.style.setProperty('--c', col); });
+    refreshBin(); refreshGearNote();
+  }
+  function refreshGearNote() {
+    var g = S.g[S.slot], t = [];
+    if (g.undercut) t.push('按标准齿条刀具范成：这只齿轮的齿根已被刀具切进去一部分（根切）。');
+    else if (g.undercutRisk) t.push('按标准齿条刀具范成：齿根处于刚开始根切的边界附近。');
+    if (g.pointed) t.push('齿顶已经变尖。');
+    if (g.notes.indexOf('cutter_tip_pointed') >= 0) t.push('这组参数下标准刀具的齿顶已成尖角，齿根挖不到设定深度。');
+    $('gearNote').textContent = t.join(' ');
+  }
+  // 动滑块 = 进入“自定义”：参数同时记到这个位置的自定义里
+  var pendingRebuild = false, liveTok = 0;
+  function setParam(k, v, live) {
+    if (S.running) stopRun('param_change');
+    S.p[S.slot][k] = v;
+    S.mode[S.slot] = CUSTOM; S.custom[S.slot] = copy(S.p[S.slot]);
+    if (live && !pendingRebuild) {
+      pendingRebuild = true; var tok = ++liveTok;
+      requestAnimationFrame(function () { pendingRebuild = false; if (tok === liveTok) afterGearChange(true); });
+    }
+  }
+  function commitParam(k, before, after) {
+    liveTok++;                                         // 作废还没执行的拖动中预览
+    if (Math.abs(before - after) < 1e-12) { if (S.preview) afterGearChange(false); return; }
+    afterGearChange(false, { gear: S.slot + 1, key: k });
+    REC.log('param_changed', { gear: S.slot + 1, key: k, before: before, after: after });
+  }
+  function afterGearChange(live, why) {
+    rebuild(S.slot); paths[S.slot] = buildPath(S.g[S.slot]);
+    if (S.autoFit) {
+      if (live) previewFit(); else requestFit('auto', why || null);
+    } else {
+      S.preview = false;
+      var rr = aRange(); if (S.a < rr[0] || S.a > rr[1]) S.a = clamp(S.a, rr[0], rr[1]);
+      refreshARange();
+      settleAfterChange(); S.hist = [];
+      restingFeedback();
+    }
+    refreshBin(); refreshGearNote(); refreshWhy();
+    dirty = true;
+  }
+  function applyPreset(b) {
+    var before = copy(S.p[S.slot]);
+    if (S.running) stopRun('param_change');
+    S.p[S.slot] = pick(b); S.mode[S.slot] = b.id;
+    afterGearChange(false, { gear: S.slot + 1, preset: b.id }); refreshParams();
+    REC.log('gear_preset_applied', { gear: S.slot + 1, preset: b.id, before: before, after: pick(b) });
+  }
+  function applyCustom() {
+    var before = copy(S.p[S.slot]);
+    if (S.running) stopRun('param_change');
+    S.p[S.slot] = copy(S.custom[S.slot]); S.mode[S.slot] = CUSTOM;
+    afterGearChange(false, { gear: S.slot + 1, preset: CUSTOM }); refreshParams();
+    REC.log('gear_preset_applied', { gear: S.slot + 1, preset: CUSTOM, before: before, after: copy(S.p[S.slot]) });
+  }
+  function refreshARange() {
+    var rr = aRange(), rg = $('aRange'), nm = $('aNum');
+    rg.min = rr[0]; rg.max = rr[1]; nm.min = rr[0]; nm.max = rr[1];
+    rg.value = S.a; nm.value = S.a.toFixed(2);
+  }
+  function setCenter(a, quick) {
+    var rr = aRange(); S.a = clamp(a, rr[0], rr[1]);
+    settleAfterChange(quick); S.hist = [];
+    $('aRange').value = S.a; $('aNum').value = S.a.toFixed(2);
+    restingFeedback(); dirty = true;
+  }
+
+  /* ---------------- 解释（默认收起，按需展开） ---------------- */
+  var whyLevel = 0;
+  function refreshWhy() {
+    var box = $('why'); if (box.hidden) return;
+    var g1 = S.g[0], g2 = S.g[1], T = theory();
+    var fp = S.blocked ? null : GC.freePlay(g1, g2, S.a, S.th1, S.th2);
+    var bl = fp && fp.any && !fp.jam ? Math.max(0, fp.hi - fp.lo) : NaN;
+    var M = (S.analysis && S.analysisKey === cfgKey()) ? S.analysis : null;
+    var rows = [
+      ['基节 p<sub>b</sub> = π m cos α', fmt(T.pb1, 3) + ' ／ ' + fmt(T.pb2, 3) + ' mm'],
+      ['分度圆半径 r = m z / 2', fmt(g1.r, 2) + ' ／ ' + fmt(g2.r, 2) + ' mm'],
+      ['基圆半径 r<sub>b</sub>', fmt(g1.rb, 3) + ' ／ ' + fmt(g2.rb, 3) + ' mm'],
+      ['中心距 a ／ r<sub>1</sub>+r<sub>2</sub>', fmt(S.a, 2) + ' ／ ' + fmt(T.a0, 2) + ' mm'],
+      ['顶隙（1 顶→2 根 ／ 2 顶→1 根）', fmt(T.clear12, 2) + ' ／ ' + fmt(T.clear21, 2) + ' mm'],
+      ['从动轮此刻可晃动的角度', isFinite(bl) ? fmt(bl / DEG, 3) + '°（约 ' + fmt(bl * g2.r, 3) + ' mm）' : '—']
+    ];
+    if (T.pbMatch && isFinite(T.aw)) rows.push(['工作压力角 α′（cos α′ = (r<sub>b1</sub>+r<sub>b2</sub>)/a）', fmt(T.aw / DEG, 2) + '°']);
+    if (T.pbMatch && isFinite(T.epsFormula)) rows.push(['重合度 ε<sub>α</sub>（公式）', fmt(T.epsFormula, 3) + (T.epsValid ? '' : '（接触超出有效渐开线段，公式不适用）')]);
+    if (M && M.cls !== 'jam' && M.cls !== 'radial_clash' && M.contactSteps) rows.push(['试运行实测：平均同时接触齿对', fmt(M.meanPairs, 2)]);
+    if (M && M.meanRatio) rows.push(['试运行实测：ω<sub>1</sub>/ω<sub>2</sub> 平均（z<sub>2</sub>/z<sub>1</sub>=' + fmt(g2.z / g1.z, 3) + '）', fmt(1 / M.meanRatio, 3) + '，瞬时最大偏差 ' + fmt(M.maxDev * 100, 1) + '%']);
+    var html = '<table>' + rows.map(function (r) { return '<tr><td>' + r[0] + '</td><td>' + r[1] + '</td></tr>'; }).join('') + '</table>';
+    html += '<p>' + diagnose(T, M) + '</p>';
+    if (whyLevel < 2) html += '<p><button type="button" class="plain-link" id="whyMore">我已经试过几组了，看规律总结</button></p>';
+    else html += ruleHTML();
+    box.innerHTML = html;
+    var more = $('whyMore'); if (more) more.addEventListener('click', function () { whyLevel = 2; REC.log('help_opened', { level: 2 }); refreshWhy(); });
+  }
+  function diagnose(T, M) {
+    var g1 = S.g[0], g2 = S.g[1];
+    if (S.blocked && S.blocked.type === 'radial') return '当前中心距下，一只齿轮的齿顶圆已经伸到另一只的齿根圆以内（顶隙为负）。这是径向装不下，和两轮是否“配对”是两回事；先把轴心拉开看看。';
+    if (S.blocked) return '当前位置上两轮的齿侧同时受挤，从动轮怎么转都避不开。若两轮基节相等，这通常说明中心距比两分度圆相切时还小；若基节不等，则是齿距本身对不上。';
+    if (S.a >= g1.ra + g2.ra) return '两齿顶圆不相交，轮齿根本碰不到。';
+    if (!T.pbMatch) return '两轮基节不相等：沿作用线方向，相邻两齿之间的距离两边不一样。一对齿在接触时，下一对齿要么提前撞上、要么还没接上，所以从动轮无法始终按同一转速比被推动。' + (T.mMatch !== T.alphaMatch ? '（这里只有' + (T.mMatch ? '压力角' : '模数') + '不同。）' : '');
+    if (!T.standardPair) return '两轮模数、压力角不同，但基节恰好相等。理想渐开线下接触仍在两基圆的内公切线上，转速比可以恒定；但两轮齿厚、齿槽是按各自参数做的，能否不卡、侧隙多大要看实际试运行结果——这不是教材里的标准配对。';
+    if (M && M.cls === 'smooth') return '两轮基节相等。接触点始终落在两基圆的内公切线（作用线）上，所以转速比恒等于 z₂/z₁。中心距改变时这一点不变，变化的是工作压力角、侧隙和重合度。';
+    if (isFinite(T.epsFormula) && T.epsFormula < 1) return '两轮基节相等，但作用线上实际能接触的一段比一个基节还短（ε < 1）：前一对齿在作用线上脱开时，下一对齿还没到作用线上，中间只能靠齿顶棱边推动，转速比就不再恒定。';
+    if (!T.epsValid) return '两轮基节相等，但齿顶会伸到对方有效渐开线以下（靠近齿根的非渐开线部分），在那里接触就不再保持恒定转速比，可能出现顿挫或干涉。这与“配对”无关，而与齿数少、齿顶高大、根切有关。';
+    return '两轮基节相等。点“试运行”转一会儿，再回来看实测数据。';
+  }
+  function ruleHTML() {
+    return '<div class="rule"><b>规律总结（供对照你自己的试验）</b><ol>' +
+      '<li>渐开线齿轮的接触点总在两基圆的内公切线（作用线）上。要让一对齿接一对齿地连续推动，两轮沿作用线的齿距——<b>基节</b> p<sub>b</sub> = π m cos α 必须相等。</li>' +
+      '<li>教材中的标准齿轮配对把它落实为：<b>两轮模数相等、分度圆压力角相等</b>（m<sub>1</sub>=m<sub>2</sub>，α<sub>1</sub>=α<sub>2</sub>）。模数、压力角不同但基节碰巧相等的组合不属于标准配对，能否正常工作还要看齿厚、干涉等实际情况。</li>' +
+      '<li>齿数只改变大小和转速比 ω<sub>1</sub>/ω<sub>2</sub> = z<sub>2</sub>/z<sub>1</sub>，不破坏正确啮合。</li>' +
+      '<li>中心距不必严格等于 a = m(z<sub>1</sub>+z<sub>2</sub>)/2：拉开一些，转速比仍然恒定（渐开线的可分性），但工作压力角 α′ 变大、出现侧隙、重合度 ε<sub>α</sub> 变小；ε<sub>α</sub> &lt; 1 时就接不上了。比 a 还小则两侧齿面互相挤住。</li>' +
+      '<li>齿顶高系数 h<sub>a</sub>* 改变齿顶圆，从而改变作用线上能接触的长度（重合度）和齿顶干涉的风险；顶隙系数 c* 只改变齿根深度与顶隙。两者都不改变基节，不是“能否配对”的条件。</li>' +
+      '<li>根切是刀具加工小齿数齿轮时把齿根切掉的现象，属于加工条件，和配对条件不是一回事。</li></ol></div>';
+  }
+
+  /* ---------------- 试验记录 ---------------- */
+  var trials = [];
+  function quickCheck() {
+    finishFitNow();
+    var key = cfgKey();
+    if (S.analysis && S.analysisKey === key) return S.analysis;
+    if (S.blocked) return { cls: S.blocked.type === 'radial' ? 'radial_clash' : 'jam', maxDev: 0, pauseFrac: 0, meanPairs: 0, minBacklash: NaN, meanRatio: 0 };
+    var M = GC.sweep(S.g[0], S.g[1], S.a, S.th1, S.th2, { stepsPerPitch: 36, warm: 1, pitches: 1.5 });
+    S.analysis = M; S.analysisKey = key; return M;
+  }
+  function saveTrial() {
+    var M = quickCheck(), shown = S.lastFeedbackText || '（还没试运行）';
+    var row = { n: trials.length + 1, g1: copy(S.p[0]), g2: copy(S.p[1]), a: +S.a.toFixed(2), shown: shown };
+    trials.push(row);
+    REC.log('observation_saved', { n: row.n, shown_feedback: shown, model: summary(M) });
+    renderTrials();
+    $('trialTip').textContent = '已记下第 ' + row.n + ' 次';
+  }
+  function gtxt(p) { var b = binOf(p); return (b ? b + ' ' : '') + 'm' + trimNum(p.m) + ' z' + p.z + ' ' + trimNum(p.alpha) + '°' + (p.ha !== 1 || p.c !== 0.25 ? ' h' + trimNum(p.ha) + ' c' + trimNum(p.c) : ''); }
+  function renderTrials() {
+    var t = $('trials'), tb = t.querySelector('tbody'); tb.innerHTML = '';
+    trials.slice(-3).forEach(function (r) {
+      var tr = document.createElement('tr');
+      [r.n, gtxt(r.g1), gtxt(r.g2), fmt(r.a, 2), r.shown].forEach(function (v) { var td = document.createElement('td'); td.textContent = v; tr.appendChild(td); });
+      tb.appendChild(tr);
+    });
+    t.hidden = trials.length === 0;
+  }
+
+  /* ---------------- 交互：拖轴心 / 拨齿轮 ---------------- */
+  var drag = null;
+  function hit(cx, cy) {
+    var w = toWorld(cx, cy), hs = toScreen(S.a, 0);
+    if (Math.hypot(cx - hs[0], cy - hs[1]) < 24) return 'center';
+    if (Math.hypot(w[0] - S.a, w[1]) < S.g[1].ra) return 'rot2';
+    if (Math.hypot(w[0], w[1]) < S.g[0].ra) return 'rot1';
+    return null;
+  }
+  function begin(cx, cy) {
+    var mode = hit(cx, cy); if (!mode) return false;
+    if (S.running) stopRun('hand');
+    if (S.fit) { if (mode === 'center') cancelFit(); else return false; }   // 靠拢计算中不接受拨齿，避免低端机上同步计算卡顿
+    var w = toWorld(cx, cy);
+    drag = { mode: mode, aStart: S.a, th1Start: S.th1, th2Start: S.th2, last: null, total: 0, limited: false };
+    if (mode === 'center') { V.frozen = true; drag.dx = w[0] - S.a; }
+    else { var c = mode === 'rot1' ? [0, 0] : [S.a, 0]; drag.last = Math.atan2(w[1] - c[1], w[0] - c[0]); }
+    dirty = true; return true;
+  }
+  function move(cx, cy) {
+    if (!drag) return;
+    var w = toWorld(cx, cy);
+    if (drag.mode === 'center') { setCenter(w[0] - drag.dx, true); }
+    else {
+      var c = drag.mode === 'rot1' ? [0, 0] : [S.a, 0], ang = Math.atan2(w[1] - c[1], w[0] - c[0]);
+      var d = GC.wrapPer(ang - drag.last, 2 * PI); drag.last = ang;
+      if (drag.mode === 'rot1') { var got = driveBy(d, false); if (Math.abs(got - d) > 1e-9) drag.limited = true; drag.total += got; if (S.jam) drag.jam = S.jam.type; }
+      else { var mv = turnFollowerBy(d); if (Math.abs(mv - d) > 1e-6) drag.limited = true; drag.total += mv; }
+    }
+    dirty = true;
+  }
+  function end() {
+    if (!drag) return;
+    var d = drag; drag = null;
+    if (d.mode === 'center') {
+      V.frozen = false;
+      if (S.needFullSettle) { S.needFullSettle = false; settleAfterChange(); restingFeedback(); }
+      if (Math.abs(S.a - d.aStart) > 1e-6) REC.log('center_changed', { method: 'drag', before: +d.aStart.toFixed(3), after: +S.a.toFixed(3) });
+      refreshWhy();
+    } else if (Math.abs(d.total) > 1e-6 || d.limited) {
+      REC.log(d.mode === 'rot1' ? 'driver_turned_by_hand' : 'follower_turned_by_hand', { delta_deg: +(d.total / DEG).toFixed(3), stopped_by_contact: d.limited, jammed: d.jam || null, blocked: S.blocked ? S.blocked.type : null });
+      if (d.jam) setFeedback(d.jam === 'radial' ? 'radial' : 'jam');
+      refreshWhy();
+    }
+    dirty = true;
+  }
+  function rel(e) { var r = canvas.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; }
+  canvas.addEventListener('mousedown', function (e) { var p = rel(e); if (begin(p[0], p[1])) e.preventDefault(); });
+  window.addEventListener('mousemove', function (e) {
+    if (drag) { var p = rel(e); move(p[0], p[1]); }
+    else if (e.target === canvas) { var q = rel(e), h = hit(q[0], q[1]); canvas.style.cursor = h === 'center' ? 'ew-resize' : (h ? 'grab' : 'default'); }
+  });
+  window.addEventListener('mouseup', end);
+  // 触摸：只有按在齿轮/轴心上才拦截滚动，其余区域照常滚动页面
+  canvas.addEventListener('touchstart', function (e) {
+    if (e.touches.length !== 1) { if (drag) end(); return; }
+    var p = rel(e.touches[0]); if (begin(p[0], p[1])) e.preventDefault();
+  }, { passive: false });
+  canvas.addEventListener('touchmove', function (e) { if (!drag) return; e.preventDefault(); var p = rel(e.touches[0]); move(p[0], p[1]); }, { passive: false });
+  canvas.addEventListener('touchend', function (e) { if (drag) { e.preventDefault(); end(); } }, { passive: false });
+  canvas.addEventListener('touchcancel', end);
+
+  /* ---------------- 其余控件 ---------------- */
+  function bind() {
+    $('runBtn').addEventListener('click', function () {
+      if (S.running) stopRun('user');
+      else if (S.fit && S.runQueued) { S.runQueued = false; fitBtnState(); }
+      else startRun();
+      dirty = true;
+    });
+    function stepBy(sign) {
+      if (S.running) stopRun('step');
+      finishFitNow();
+      var d = sign * S.g[0].pitchAng / 8, got = driveBy(d, false);
+      REC.log('step', { dir: sign, step_deg: +(d / DEG).toFixed(3), turned_deg: +(got / DEG).toFixed(3), jammed: S.jam ? S.jam.type : null, blocked: S.blocked ? S.blocked.type : null });
+      if (S.jam) setFeedback(S.jam.type === 'radial' ? 'radial' : 'jam');
+      else if (S.blocked) restingFeedback();
+      dirty = true;
+    }
+    $('stepFwd').addEventListener('click', function () { stepBy(1); });
+    $('stepBack').addEventListener('click', function () { stepBy(-1); });
+    var sp = $('speed'), spBefore = S.speed;
+    sp.addEventListener('input', function () { S.speed = +sp.value; $('speedOut').textContent = sp.value + '°/s'; });
+    sp.addEventListener('change', function () { if (spBefore !== S.speed) REC.log('speed_changed', { before: spBefore, after: S.speed }); spBefore = S.speed; });
+    $('rephaseBtn').addEventListener('click', function () {
+      if (S.running) stopRun('rephase');
+      finishFitNow();
+      var b = { th1: +(S.th1 / DEG).toFixed(2), th2: +(S.th2 / DEG).toFixed(2) };
+      rephase(); S.th2ref = S.th2; restingFeedback(); dirty = true;
+      REC.log('rephased', { before: b, ok: !S.blocked });
+    });
+    Array.prototype.forEach.call(document.querySelectorAll('#slotSeg button'), function (b) {
+      b.addEventListener('click', function () {
+        S.slot = +b.dataset.slot;
+        Array.prototype.forEach.call(document.querySelectorAll('#slotSeg button'), function (x) { x.setAttribute('aria-checked', x === b ? 'true' : 'false'); });
+        refreshParams();
+      });
+    });
+    var ar = $('aRange'), an = $('aNum'), aBefore = null;
+    function aBegin() { if (aBefore === null) aBefore = S.a; }
+    ar.addEventListener('pointerdown', aBegin); ar.addEventListener('touchstart', aBegin, { passive: true }); ar.addEventListener('keydown', aBegin);
+    ar.addEventListener('input', function () { aBegin(); if (S.running) stopRun('center_change'); cancelFit(); S.preview = false; V.frozen = true; setCenter(+ar.value, true); });
+    ar.addEventListener('change', function () { V.frozen = false; dirty = true; if (S.needFullSettle) { S.needFullSettle = false; settleAfterChange(); restingFeedback(); } var b = aBefore === null ? S.a : aBefore; aBefore = null; if (Math.abs(b - S.a) > 1e-6) REC.log('center_changed', { method: 'slider', before: +b.toFixed(3), after: +S.a.toFixed(3) }); refreshWhy(); });
+    an.addEventListener('change', function () {
+      var b = S.a, v = +an.value; if (!isFinite(v)) v = S.a;
+      if (S.running) stopRun('center_change');
+      cancelFit(); S.preview = false;
+      setCenter(Math.round(v * 100) / 100);
+      if (Math.abs(b - S.a) > 1e-6) REC.log('center_changed', { method: 'number', before: +b.toFixed(3), after: +S.a.toFixed(3) });
+      refreshWhy();
+    });
+    $('fitBtn').addEventListener('click', function () { if (!S.fit) requestFit('button'); });
+    $('restoreBtn').addEventListener('click', function () {
+      if (S.running) stopRun('restore');
+      var before = { g1: copy(S.p[0]), g2: copy(S.p[1]), a: +S.a.toFixed(3) };
+      S.p = [pick(INIT_P[0]), pick(INIT_P[1])]; S.mode = [INIT_P[0].id, INIT_P[1].id];
+      rebuild(0); rebuild(1); paths[0] = buildPath(S.g[0]); paths[1] = buildPath(S.g[1]);
+      refreshParams();
+      REC.log('install_restored', { before: before, gears: [INIT_P[0].id, INIT_P[1].id] });
+      requestFit('restore');
+      refreshWhy();
+    });
+    $('autoFit').addEventListener('change', function () {
+      S.autoFit = $('autoFit').checked;
+      REC.log('auto_fit_toggled', { on: S.autoFit });
+      if (!S.autoFit && S.preview) { S.preview = false; settleAfterChange(); restingFeedback(); dirty = true; }
+    });
+    Array.prototype.forEach.call(document.querySelectorAll('.tog'), function (b) {
+      b.addEventListener('click', function () {
+        var k = b.dataset.ov; S.ov[k] = !S.ov[k]; b.setAttribute('aria-pressed', S.ov[k] ? 'true' : 'false');
+        REC.log('overlay_toggled', { overlay: k, on: S.ov[k] });
+        dirty = true;
+      });
+    });
+    $('saveTrialBtn').addEventListener('click', saveTrial);
+    $('whyBtn').addEventListener('click', function () {
+      var box = $('why'), open = box.hidden;
+      box.hidden = !open; $('whyBtn').setAttribute('aria-expanded', open ? 'true' : 'false');
+      $('whyBtn').textContent = open ? '收起原因' : '想看看原因？';
+      if (open) { if (!whyLevel) whyLevel = 1; REC.log('help_opened', { level: 1, shown_feedback: S.lastFeedbackText }); refreshWhy(); }
+    });
+    if (window.ResizeObserver) new ResizeObserver(resize).observe(canvas); else window.addEventListener('resize', resize);
+    window.addEventListener('orientationchange', function () { setTimeout(resize, 250); });
+  }
+
+  /* ---------------- 教师查看 ---------------- */
+  function toggleTeacher() {
+    var t = $('teacher');
+    if (!t.hidden) { t.hidden = true; return; }
+    REC.log('teacher_opened', {});
+    var T = theory(), M = quickCheck(), g1 = S.g[0], g2 = S.g[1], st = REC.status();
+    function gRow(n, g) {
+      return '<tr><td>' + n + '</td><td>' + fmt(g.m, 2) + '</td><td>' + g.z + '</td><td>' + fmt(g.alphaDeg, 1) + '°</td><td>' + fmt(g.haStar, 2) + '</td><td>' + fmt(g.cStar, 2) +
+        '</td><td>' + fmt(g.r, 3) + '</td><td>' + fmt(g.rb, 3) + '</td><td>' + fmt(g.ra, 3) + '</td><td>' + fmt(g.rf, 3) + '</td><td>' + fmt(g.pb, 4) +
+        '</td><td>' + fmt(g.rs, 3) + '</td><td>' + (g.undercut ? '是' : (g.undercutRisk ? '临界' : '否')) + '</td></tr>';
+    }
+    var h = '<h2>教师查看（学生端默认不显示）</h2>' +
+      '<p>以下数值由页面内同一模型实时计算。r<sub>s</sub> 为有效渐开线起始半径（范成包络得到）。</p>' +
+      '<table><tr><th></th><th>m</th><th>z</th><th>α</th><th>h<sub>a</sub>*</th><th>c*</th><th>r</th><th>r<sub>b</sub></th><th>r<sub>a</sub></th><th>r<sub>f</sub></th><th>p<sub>b</sub></th><th>r<sub>s</sub></th><th>根切</th></tr>' +
+      gRow('齿轮 1', g1) + gRow('齿轮 2', g2) + '</table>' +
+      '<h3>当前安装</h3><table>' +
+      '<tr><td>a ／ r1+r2</td><td>' + fmt(S.a, 3) + ' ／ ' + fmt(T.a0, 3) + ' mm</td></tr>' +
+      '<tr><td>标准配对（m、α 均相等）</td><td>' + (T.standardPair ? '是' : '否') + '；基节相等：' + (T.pbMatch ? '是' : '否') + '</td></tr>' +
+      '<tr><td>α′（cos α′=(rb1+rb2)/a）</td><td>' + (isFinite(T.aw) ? fmt(T.aw / DEG, 3) + '°' : '—') + '</td></tr>' +
+      '<tr><td>ε<sub>α</sub> 公式 ／ 适用</td><td>' + fmt(T.epsFormula, 4) + ' ／ ' + (T.epsValid ? '适用' : '不适用') + '</td></tr>' +
+      '<tr><td>顶隙 1→2 ／ 2→1</td><td>' + fmt(T.clear12, 3) + ' ／ ' + fmt(T.clear21, 3) + ' mm</td></tr>' +
+      '<tr><td>理论圆周侧隙（工作节圆）</td><td>' + fmt(T.backlashTheory, 4) + ' mm</td></tr>' +
+      '<tr><td>模型扫描结论</td><td>' + (M ? M.cls : '—') + '</td></tr>' +
+      '<tr><td>实测 ω1/ω2 平均 ／ 最大瞬时偏差</td><td>' + (M && M.meanRatio ? fmt(1 / M.meanRatio, 4) : '—') + ' ／ ' + (M ? fmt(M.maxDev * 100, 2) + '%' : '—') + '</td></tr>' +
+      '<tr><td>实测平均接触齿对数</td><td>' + (M ? fmt(M.meanPairs, 3) : '—') + '</td></tr>' +
+      '</table>' +
+      '<h3>本机记录</h3><p>会话 ' + st.session_id + '，已记录 ' + st.total_events + ' 条；存储：' + st.stored + '；网络上传：无' + (st.wps_url_configured ? '（已配置 WPS 表单链接）' : '（未配置 WPS 表单链接）') + '。</p>' +
+      '<h3>解码学生上传的 JSON</h3><p>可多选文件；解码后合并为一个明文 JSON 下载，并在下方列出摘要。</p>' +
+      '<input type="file" id="decFiles" accept=".json,application/json" multiple> <button type="button" class="btn small" id="decBtn">解码并下载</button>' +
+      '<pre id="decOut" hidden></pre>' + ruleHTML();
+    t.innerHTML = h; t.hidden = false;
+    $('decBtn').addEventListener('click', decodeFiles);
+    t.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+  function decodeFiles() {
+    var inp = $('decFiles'), out = $('decOut'), files = inp.files; if (!files || !files.length) return;
+    var res = [], lines = [], left = files.length;
+    Array.prototype.forEach.call(files, function (f) {
+      var r = new FileReader();
+      r.onload = function () {
+        try {
+          var o = REC.decode(String(r.result)); res.push({ file: f.name, data: o });
+          var ex = o.exploration || {};
+          lines.push(f.name + '｜' + o.student_name + '｜' + Math.round((o.duration_seconds || 0) / 60) + ' 分钟｜事件 ' + (ex.total_events || 0) + '｜运行 ' + (ex.runs_total || 0) + '｜配置 ' + (ex.distinct_configurations || 0) + '｜答：' + String((o.answer && o.answer.text) || '').slice(0, 40));
+        } catch (e) { lines.push(f.name + '｜无法解码：' + e.message); }
+        if (--left === 0) {
+          out.hidden = false; out.textContent = lines.join('\n');
+          var blob = new Blob([JSON.stringify(res, null, 2)], { type: 'application/json;charset=utf-8' });
+          var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = '齿轮啮合_解码合并_' + res.length + '份.json';
+          document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 4000);
+        }
+      };
+      r.readAsText(f);
+    });
+  }
+
+  /* ---------------- 启动 ---------------- */
+  function restoreFromLog() {
+    try {
+      var d = REC.data(); if (!d || !d.events || !d.events.length) return false;
+      var s = null; for (var i = d.events.length - 1; i >= 0; i--) if (d.events[i].s && d.events[i].s.g1) { s = d.events[i].s; break; }
+      if (!s) return false;
+      function back(x) { return { m: +x.m, z: +x.z, alpha: +x.al, ha: +x.ha, c: +x.c }; }
+      var p1 = back(s.g1), p2 = back(s.g2);
+      if (!KEYS.every(function (k) { return isFinite(p1[k]) && isFinite(p2[k]); })) return false;
+      S.p = [p1, p2]; S.a = +s.a; S.th1 = (+s.th1 || 0) * DEG; S.th2 = (+s.th2 || 0) * DEG;
+      [s.g1, s.g2].forEach(function (x, i) {
+        var src = x.src || binOf(S.p[i]) || CUSTOM;
+        S.mode[i] = src;
+        if (src === CUSTOM) S.custom[i] = copy(S.p[i]);
+      });
+      return true;
+    } catch (e) { return false; }
+  }
+  function start() {
+    var restored = REC.resumed() && restoreFromLog();
+    rebuild(0); rebuild(1); paths[0] = buildPath(S.g[0]); paths[1] = buildPath(S.g[1]);
+    buildBin(); buildParams(); refreshParams(); refreshARange();
+    bind();
+    if (restored) { settleAfterChange(); S.th2ref = S.th2; restingFeedback(); }
+    else requestFit('start');
+    var bm = $('bootMsg'); if (bm) bm.parentNode.removeChild(bm);
+    REC.setStateProvider(stateSnap);
+    REC.setFinalExtra(function () { return summary(quickCheck()); });
+    resize();
+    requestAnimationFrame(loop);
+  }
+  window.GearApp = { state: S, theory: theory, quickCheck: quickCheck, finishFitNow: finishFitNow, fitWorker: FW };
+  try { start(); }
+  catch (e) {
+    var bm = $('bootMsg'); if (bm) { bm.className = 'boot-msg err'; bm.textContent = '页面启动出错：' + (e && e.message) + '。请换用 Chrome、Edge 或手机自带浏览器打开。'; }
+    throw e;
+  }
+})();
+
+</script>
+</body>
+</html>
